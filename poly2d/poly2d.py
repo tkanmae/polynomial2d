@@ -19,31 +19,33 @@ class RankWarning(UserWarning):
     pass
 
 def order_to_ncoeffs(order):
-    """Return the number of the coefficients per coordinate for a given polynomial order.
+    """Return the number of the coefficients per coordinate for a given
+    polynomial order.
 
     Parameters
     ----------
-    order: int
+    order : int
         The polynomial order.
 
     Returns
     -------
-    ncoeffs: int
+    ncoeffs : int
         The number of the coeefficients per coordinate.
     """
     return 3 + (order-1)*(order+4) // 2
 
 def ncoeffs_to_order(order):
-    """Return the polynomial order for a given number of the coefficients per coordinate.
+    """Return the polynomial order for a given number of the coefficients
+    per coordinate.
 
     Parameters
     ----------
-    ncoeffs: int
+    ncoeffs : int
         The number of the coeefficients per coordinate.
 
     Returns
     -------
-    order: int
+    order : int
         The polynomial order.
     """
     from math import sqrt
@@ -60,16 +62,16 @@ def fitting_matrix(x, y, order):
 
     Parameters
     ----------
-    x: ndarray
+    x : ndarray
         The x-coordinate of M sample points.
-    y: ndarray
+    y : ndarray
         The y-coordinate of M sample points.
-    order: int
-        The polynomial order.
+    order : int
+        The order of the polynomial.
 
     Returns
     -------
-    X: ndarray
+    X : ndarray
         The fitting matrix.
     """
     x = np.asarray(x)
@@ -130,19 +132,19 @@ def polyfit2d(x, y, xt, yt, order=1, rcond=None, full_output=False):
         The x'-coordinates of the M sample points.
     yt : array_like, shape (M,)
         The y'-coordinates of the M sample points.
-    order: int, optional
+    order : int, optional
         The order of the fitting polynomial.
-    rcond: float, optional
+    rcond : float, optional
         The relative condition of the fit.  Singular values smaller than
         this number relative to the largest singular value will be
         ignored.
-    full_output: {True, False}, optional
+    full_output : {True, False}, optional
         Just the coefficients are returned if False, and diagnostic
         information from the SVD is also returned if True.
 
     Returns
     -------
-    cx, cy: ndarray
+    cx, cy : ndarray
         The polynomial coefficients in increasing powers.
 
     Warns
@@ -164,8 +166,17 @@ def polyfit2d(x, y, xt, yt, order=1, rcond=None, full_output=False):
     xt = np.asarray(xt, float)
     yt = np.asarray(yt, float)
 
+    # -- Check inputs.
     if x.size != y.size or x.size != xt.size or x.size != yt.size:
         raise ValueError("`x`, `y`, `xt`, and `yt` must have the same size.")
+    if x.ndim != 1:
+        raise ValueError("`x` must be 1-dim.")
+    if y.ndim != 1:
+        raise ValueError("`y` must be 1-dim.")
+    if xt.ndim != 1:
+        raise ValueError("`xt` must be 1-dim.")
+    if yt.ndim != 1:
+        raise ValueError("`yt` must be 1-dim.")
 
     # -- Set `rcond`
     if rcond is None:
@@ -206,33 +217,76 @@ class poly2d(object):
 
     Parameters
     ----------
-    cx, cy: ndarray
+    cx, cy: array_like
         The polynomial coefficients in increasing powers.
+
+    Attributes
+    ----------
+    order
+    cx : ndarray
+        The polynomial coefficients for the x'-coordinate.
+    cy : ndarray
+        The polynomial coefficients for the y'-coordinate.
+    order : int
+        The order of the polynomial.
+    valid_ncoeffs : tuple
+        The valid number of the coefficients per coordinate.
     """
     maximum_order = len(polyfunc)
-    valid_ncoeffs = [order_to_ncoeffs(n) for n in range(1, maximum_order+1)]
+    valid_ncoeffs = tuple(order_to_ncoeffs(n) for n in range(1, maximum_order+1))
 
     def __init__(self, cx, cy):
         cx = np.atleast_1d(cx) + 0.0
         cy = np.atleast_1d(cy) + 0.0
+
+        # -- Check inputs.
         if cx.size != cy.size:
             raise ValueError("`cx` and `cy` must have the same size.")
+        if cx.ndim != 1:
+            raise ValueError("`cx` must be 1-dim.")
+        if cy.ndim != 1:
+            raise ValueError("`cy` must be 1-dim.")
         if len(cx) not in self.valid_ncoeffs:
             msg = 'Invalid number of the coefficients: %d\n' % len(cx) + \
                   'Must be one of ' + str(self.valid_ncoeffs)
             raise ValueError(msg)
+
         self.cx = cx
         self.cy = cy
 
-        self.order = ncoeffs_to_order(len(cx))
+        self._order = ncoeffs_to_order(len(cx))
 
     def __call__(self, x, y):
+        """Return the transformed coordinates.
+
+        Parameters
+        ----------
+        x : array_like, shape(M,)
+            The x-coordinate.
+        y : array_like, shape(M,)
+            The y-coordinate.
+
+        Returns
+        -------
+        xt : ndarray, shape(M,)
+            The transformed x-coordinate.
+        yt : ndarray, shape(M,)
+            The transformed y-coordinate.
+        """
         x = np.atleast_1d(x) + 0.0
         y = np.atleast_1d(y) + 0.0
+
+        # -- Chek inputs.
         if x.size != y.size:
             raise ValueError('`x` and `y` must have the same size.')
+        if x.ndim != 1:
+            raise ValueError("`x` must be 1-dim.")
+        if y.ndim != 1:
+            raise ValueError("`y` must be 1-dim.")
+
         return polyfunc[self.order](x, y, self.cx, self.cy)
 
-    def ncoeffs(self):
-        """Return the number of the coefficients per coordinate."""
-        return order_to_ncoeffs(self.order)
+    @property
+    def order(self):
+        """The order of the polynomial."""
+        return self._order
