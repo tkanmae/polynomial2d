@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from os.path import join
 
+# -- http://www.mail-archive.com/numpy-discussion@scipy.org/msg19933.html
 from numpy.distutils.command import build_src
 try:
     import Cython
@@ -11,9 +12,9 @@ except ImportError, e:
     print 'You must need Cython installed.'
     raise e
 
+
 _root_dir = 'poly2d'
 _src_dir  = join(_root_dir, 'src')
-
 
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration

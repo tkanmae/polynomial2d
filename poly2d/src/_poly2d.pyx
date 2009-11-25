@@ -18,12 +18,6 @@ def poly1(np.ndarray[np.float_t, ndim=1] xi,
         np.ndarray[np.float_t, ndim=1] yo = \
                 np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
 
-        double a1, a2, a3
-        double b1, b2, b3
-
-    a1 = cx[0]; a2 = cx[1]; a3 = cx[2]
-    b1 = cy[0]; b2 = cy[1]; b3 = cy[2]
-
     cdef Py_ssize_t i
 
     for i in range(n):
