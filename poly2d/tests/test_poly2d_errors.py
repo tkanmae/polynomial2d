@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 import numpy as np
 from numpy.testing import *
@@ -28,6 +29,7 @@ class TestPoly2d(TestCase):
         y = np.random.random(11)
         self.failUnlessRaises(ValueError, p, x, y)
 
+
 class TestPolyfit2d(TestCase):
 
     def test_different_size_xy(self):
@@ -44,6 +46,7 @@ class TestPolyfit2d(TestCase):
                               polyfit2d, x, y, z, yt)
         self.failUnlessRaises(ValueError,
                               polyfit2d, x, y, xt, z)
+
 
 if __name__ == '__main__':
     run_module_suite()

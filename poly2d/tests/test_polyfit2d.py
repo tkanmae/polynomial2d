@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 from __future__ import division
 from math import (cos, sin, radians)
@@ -5,6 +6,7 @@ import numpy as np
 from numpy.testing import *
 
 from poly2d import poly2d, polyfit2d
+
 
 def run(cx0, cy0, order):
     x = 100 * np.random.random(1000)
@@ -16,6 +18,7 @@ def run(cx0, cy0, order):
 
     assert_array_almost_equal(cx, cx0)
     assert_array_almost_equal(cy, cy0)
+
 
 def realistic_coeffs(order):
     """Emulate realistic polynomial coefficients."""
@@ -30,6 +33,7 @@ def realistic_coeffs(order):
         if i == order:
             break
     return np.hstack(ret)
+
 
 class TestAffineTransform(TestCase):
 
@@ -65,6 +69,7 @@ class TestAffineTransform(TestCase):
             cy = realistic_coeffs(1)
             run(cx, cy, order=1)
 
+
 class TestPoly2Transform(TestCase):
 
     def test_transform(self):
@@ -73,6 +78,7 @@ class TestPoly2Transform(TestCase):
             cy = realistic_coeffs(2)
             run(cx, cy, order=2)
 
+
 class TestPoly3Transform(TestCase):
 
     def test_transform(self):
@@ -80,6 +86,7 @@ class TestPoly3Transform(TestCase):
             cx = realistic_coeffs(3)
             cy = realistic_coeffs(3)
             run(cx, cy, order=3)
+
 
 class TestPoly4Transform(TestCase):
 

@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""2-dim polynomial extension module.
+
+Notes
+-----
+This extensioin module does not handle errors caused by inconsistent input
+parameters.  Validation of input parameters must be done in a corresponding
+module.
+"""
 from __future__ import division
 cimport cython
 cimport numpy as np
@@ -26,6 +35,7 @@ def poly1(np.ndarray[np.float_t, ndim=1] xi,
 
     return xo, yo
 
+
 @cython.wraparound(False)
 @cython.boundscheck(False)
 def poly2(np.ndarray[np.float_t, ndim=1] xi,
@@ -53,6 +63,7 @@ def poly2(np.ndarray[np.float_t, ndim=1] xi,
                 cy[3]*x*x + cy[4]*x*y + cy[5]*y*y
 
     return xo, yo
+
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
@@ -84,6 +95,7 @@ def poly3(np.ndarray[np.float_t, ndim=1] xi,
                 cy[6]*x3 + cy[7]*x2*y + cy[8]*x*y2 + cy[9]*y3
 
     return xo, yo
+
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
