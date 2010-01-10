@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""2-dim polynomial extension module.
+"""A 2-dim polynomial extension module.
 
 Notes
 -----
-This extensioin module does not handle errors caused by inconsistent input
-parameters.  Validation of input parameters must be done in a corresponding
-module.
+This extensioin module does not handle errors caused by inconsistent
+input parameters.  Validation of input parameters must be done in a
+corresponding module.
 """
 from __future__ import division
 cimport cython
