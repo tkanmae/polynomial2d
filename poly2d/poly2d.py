@@ -4,8 +4,11 @@ from __future__ import division
 import warnings
 from math import sqrt
 import numpy as np
-from numpy.lib.getlimits import finfo
 from numpy.linalg import lstsq
+if np.__version__ < '1.4.0':
+    from numpy.lib.getlimits import finfo
+else:
+    from numpy.core.getlimits import finfo
 
 import _poly2d
 
