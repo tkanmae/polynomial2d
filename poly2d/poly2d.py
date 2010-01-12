@@ -131,7 +131,7 @@ def _kernel_mat(x, y, m):
         X[:,13] = x*X[:,9]       # x y^3
         X[:,14] = X[:,5]*X[:,5]  # y^4
     else:
-        raise ValueError('Invalid polynomial order: %d' % m)
+        raise ValueError('Invalid polynomial order: {0}'.format(m))
     return X
 
 
@@ -285,8 +285,8 @@ class poly2d(object):
         if cy.ndim != 1:
             raise ValueError("`cy` must be 1-dim.")
         if len(cx) not in self.valid_ncoeffs:
-            msg = ('Invalid number of the coefficients: %d\n' % len(cx),
-                   'Must be one of %s' % str(self.valid_ncoeffs))
+            msg = ('Invalid number of the coefficients: {0}\n'
+                   'Must be one of {1}'.format(len(cx), str(self.valid_ncoeffs)))
             raise ValueError(msg)
 
         self._cx = cx
