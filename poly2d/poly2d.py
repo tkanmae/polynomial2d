@@ -5,10 +5,6 @@ import warnings
 from math import sqrt
 import numpy as np
 from numpy.linalg import lstsq
-if np.__version__ < '1.4.0':
-    from numpy.lib.getlimits import finfo
-else:
-    from numpy.core.getlimits import finfo
 
 import _poly2d
 
@@ -197,7 +193,7 @@ def polyfit2d(x, y, xt, yt, order=1, rcond=None, full_output=False):
 
     # -- Set `rcond`
     if rcond is None:
-        rcond = x.size * finfo(x.dtype).eps
+        rcond = x.size * np.finfo(x.dtype).eps
 
     # -- Scale `x` and `y`.
     scale = max(abs(x.max()), abs(y.max()))
