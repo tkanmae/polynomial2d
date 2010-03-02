@@ -16,7 +16,7 @@ from numpy cimport (npy_intp, NPY_DOUBLE, ndarray, PyArray_ZEROS)
 
 np.import_array()
 
-ctypedef np.float_t DTYPE_t
+ctypedef np.float64_t DTYPE_t
 
 
 @cython.wraparound(False)
