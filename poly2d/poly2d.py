@@ -172,12 +172,12 @@ def polyfit2d(x, y, xt, yt, order=1, rcond=None, full_output=False):
     See Also
     --------
     numpy.linalg.lstsq
-    numpy.lib.polynomial.poolyfit
+    numpy.lib.polynomial.polyfit
     """
-    x = np.asarray(x, np.float)
-    y = np.asarray(y, np.float)
-    xt = np.asarray(xt, np.float)
-    yt = np.asarray(yt, np.float)
+    x = np.asarray(x, np.float64)
+    y = np.asarray(y, np.float64)
+    xt = np.asarray(xt, np.float64)
+    yt = np.asarray(yt, np.float64)
 
     # -- Check inputs.
     if x.size != y.size or x.size != xt.size or x.size != yt.size:
