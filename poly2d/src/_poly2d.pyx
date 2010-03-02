@@ -7,25 +7,30 @@ This extensioin module does not handle errors caused by inconsistent
 input parameters.  Validation of input parameters must be done in a
 corresponding module.
 """
+# cython: cdivision=True
 from __future__ import division
 cimport cython
 cimport numpy as np
+from numpy cimport (npy_intp, NPY_DOUBLE, ndarray, PyArray_ZEROS)
+
 
 np.import_array()
+
+ctypedef np.float_t DTYPE_t
 
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly1(np.ndarray[np.float_t, ndim=1] xi,
-          np.ndarray[np.float_t, ndim=1] yi,
-          np.ndarray[np.float_t, ndim=1] cx,
-          np.ndarray[np.float_t, ndim=1] cy):
+def poly1(ndarray[DTYPE_t, ndim=1] xi,
+          ndarray[DTYPE_t, ndim=1] yi,
+          ndarray[DTYPE_t, ndim=1] cx,
+          ndarray[DTYPE_t, ndim=1] cy):
     cdef:
         Py_ssize_t n = xi.shape[0]
-        np.ndarray[np.float_t, ndim=1] xo = \
-                np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
-        np.ndarray[np.float_t, ndim=1] yo = \
-                np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
+        ndarray[DTYPE_t, ndim=1] xo = \
+                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
+        ndarray[DTYPE_t, ndim=1] yo = \
+                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
 
     cdef Py_ssize_t i
 
@@ -38,16 +43,16 @@ def poly1(np.ndarray[np.float_t, ndim=1] xi,
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly2(np.ndarray[np.float_t, ndim=1] xi,
-          np.ndarray[np.float_t, ndim=1] yi,
-          np.ndarray[np.float_t, ndim=1] cx,
-          np.ndarray[np.float_t, ndim=1] cy):
+def poly2(ndarray[DTYPE_t, ndim=1] xi,
+          ndarray[DTYPE_t, ndim=1] yi,
+          ndarray[DTYPE_t, ndim=1] cx,
+          ndarray[DTYPE_t, ndim=1] cy):
     cdef:
         Py_ssize_t n = xi.shape[0]
-        np.ndarray[np.float_t, ndim=1] xo = \
-                np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
-        np.ndarray[np.float_t, ndim=1] yo = \
-                np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
+        ndarray[DTYPE_t, ndim=1] xo = \
+                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
+        ndarray[DTYPE_t, ndim=1] yo = \
+                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
 
     cdef:
         double x, y
@@ -67,16 +72,16 @@ def poly2(np.ndarray[np.float_t, ndim=1] xi,
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly3(np.ndarray[np.float_t, ndim=1] xi,
-          np.ndarray[np.float_t, ndim=1] yi,
-          np.ndarray[np.float_t, ndim=1] cx,
-          np.ndarray[np.float_t, ndim=1] cy):
+def poly3(ndarray[DTYPE_t, ndim=1] xi,
+          ndarray[DTYPE_t, ndim=1] yi,
+          ndarray[DTYPE_t, ndim=1] cx,
+          ndarray[DTYPE_t, ndim=1] cy):
     cdef:
         Py_ssize_t n = xi.shape[0]
-        np.ndarray[np.float_t, ndim=1] xo = \
-                np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
-        np.ndarray[np.float_t, ndim=1] yo = \
-                np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
+        ndarray[DTYPE_t, ndim=1] xo = \
+                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
+        ndarray[DTYPE_t, ndim=1] yo = \
+                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
 
     cdef:
         double x, x2, x3
@@ -99,16 +104,16 @@ def poly3(np.ndarray[np.float_t, ndim=1] xi,
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly4(np.ndarray[np.float_t, ndim=1] xi,
-          np.ndarray[np.float_t, ndim=1] yi,
-          np.ndarray[np.float_t, ndim=1] cx,
-          np.ndarray[np.float_t, ndim=1] cy):
+def poly4(ndarray[DTYPE_t, ndim=1] xi,
+          ndarray[DTYPE_t, ndim=1] yi,
+          ndarray[DTYPE_t, ndim=1] cx,
+          ndarray[DTYPE_t, ndim=1] cy):
     cdef:
         Py_ssize_t n = xi.shape[0]
-        np.ndarray[np.float_t, ndim=1] xo = \
-                np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
-        np.ndarray[np.float_t, ndim=1] yo = \
-                np.PyArray_ZEROS(1, <np.npy_intp*>&n, np.NPY_DOUBLE, 0)
+        ndarray[DTYPE_t, ndim=1] xo = \
+                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
+        ndarray[DTYPE_t, ndim=1] yo = \
+                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
 
     cdef:
         double x, x2, x3, x4
