@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 import os
 
@@ -45,7 +46,6 @@ def configuration(parent_package='', top_path=None):
 
 
 if __name__ == '__main__':
-    # import setuptools
     from numpy.distutils.core import setup
 
     setup(

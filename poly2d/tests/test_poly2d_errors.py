@@ -11,7 +11,7 @@ class TestPoly2d(TestCase):
     def test_different_size_coeffs(self):
         cx = [1, 2, 3]
         cy = [1, 2, 3, 4]
-        self.failUnlessRaises(ValueError, poly2d, cx, cy)
+        assert_raises(ValueError, poly2d, cx, cy)
 
     def test_invalid_ncoeffs(self):
         valid_ncoeffs = set((3, 6, 10, 15))
@@ -19,7 +19,7 @@ class TestPoly2d(TestCase):
         for n in invalid_ncoeffs:
             cx = np.random.random(n)
             cy = np.random.random(n)
-            self.failUnlessRaises(ValueError, poly2d, cx, cy)
+            assert_raises(ValueError, poly2d, cx, cy)
 
     def test_different_size_xy(self):
         cx = [1, 2, 3]
@@ -27,7 +27,7 @@ class TestPoly2d(TestCase):
         p = poly2d(cx, cy)
         x = np.random.random(10)
         y = np.random.random(11)
-        self.failUnlessRaises(ValueError, p, x, y)
+        assert_raises(ValueError, p, x, y)
 
 
 class TestPolyfit2d(TestCase):
@@ -40,11 +40,11 @@ class TestPolyfit2d(TestCase):
 
         z = np.random.random(11)
 
-        self.failUnlessRaises(ValueError,
+        assert_raises(ValueError,
                               polyfit2d, x, z, xt, yt)
-        self.failUnlessRaises(ValueError,
+        assert_raises(ValueError,
                               polyfit2d, x, y, z, yt)
-        self.failUnlessRaises(ValueError,
+        assert_raises(ValueError,
                               polyfit2d, x, y, xt, z)
 
 

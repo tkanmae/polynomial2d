@@ -12,7 +12,7 @@ import _poly2d
 __all__ = ['poly2d', 'polyfit2d']
 
 
-polyfunc = {
+_polyfunc = {
     1: _poly2d.poly1,
     2: _poly2d.poly2,
     3: _poly2d.poly3,
@@ -251,7 +251,7 @@ class poly2d(object):
     valid_ncoeffs : tuple of ints
         The valid number of the coefficients per coordinate.
     """
-    max_order = len(polyfunc)
+    max_order = len(_polyfunc)
     valid_ncoeffs = tuple(ncoeffs(m) for m in range(1, max_order+1))
 
     def __init__(self, cx, cy):
@@ -323,7 +323,7 @@ class poly2d(object):
         if y.ndim != 1:
             raise ValueError("`y` must be 1-dim.")
 
-        return polyfunc[self._order](x, y, self._cx, self._cy)
+        return _polyfunc[self._order](x, y, self._cx, self._cy)
 
     @property
     def order(self):
