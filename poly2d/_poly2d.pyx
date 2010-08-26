@@ -10,13 +10,12 @@ corresponding module.
 # cython: cdivision=True
 from __future__ import division
 cimport cython
-cimport numpy as np
-from numpy cimport (npy_intp, NPY_DOUBLE, ndarray, PyArray_ZEROS)
+from numpy cimport *
 
 
-np.import_array()
+import_array()
 
-ctypedef np.float64_t DTYPE_t
+ctypedef float64_t DTYPE_t
 
 
 @cython.wraparound(False)

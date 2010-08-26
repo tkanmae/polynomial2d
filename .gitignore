@@ -13,5 +13,3 @@
 *.DS_Store
 
 build/
-poly2d/src/*.c
-poly2d/src/*.html

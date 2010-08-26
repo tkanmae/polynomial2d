@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import os
 
+pjoin = os.path.join
+
 # ----------------------------------------------------------------------
 # [2010-01-10]
 # This hack does not work with `numpy.distutils` with the version 1.4.0.
@@ -21,7 +23,7 @@ import os
 
 
 root_dir = 'poly2d'
-src_dir  = os.path.join(root_dir, 'src')
+
 
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
@@ -34,13 +36,11 @@ def configuration(parent_package='', top_path=None):
     # -- Add `_poly2d` extension module.
     # src_files = ['_poly2d.pyx']
     src_files = ['_poly2d.c']
-    src_files = [os.path.join(src_dir, f) for f in src_files]
-    config.add_extension('_poly2d',
-                         sources=src_files,
-                         include_dirs=[src_dir])
+    src_files = [pjoin(root_dir, f) for f in src_files]
+    config.add_extension('_poly2d', sources=src_files)
 
     # -- Add `tests` directory.
-    config.add_data_dir(('tests', os.path.join(root_dir, 'tests')))
+    config.add_data_dir(('tests', pjoin(root_dir, 'tests')))
 
     return config
 
