@@ -73,7 +73,7 @@ class TestAffineTransform(TestCase):
 class TestPoly2Transform(TestCase):
 
     def test_transform(self):
-        for i in range(100):
+        for i in range(10):
             cx = realistic_coeffs(2)
             cy = realistic_coeffs(2)
             run(cx, cy, order=2)
@@ -82,7 +82,7 @@ class TestPoly2Transform(TestCase):
 class TestPoly3Transform(TestCase):
 
     def test_transform(self):
-        for i in range(100):
+        for i in range(10):
             cx = realistic_coeffs(3)
             cy = realistic_coeffs(3)
             run(cx, cy, order=3)
@@ -91,7 +91,7 @@ class TestPoly3Transform(TestCase):
 class TestPoly4Transform(TestCase):
 
     def test_transform(self):
-        for i in range(100):
+        for i in range(10):
             cx = realistic_coeffs(4)
             cy = realistic_coeffs(4)
             run(cx, cy, order=4)
