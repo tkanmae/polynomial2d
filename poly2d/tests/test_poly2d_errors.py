@@ -10,7 +10,7 @@ class TestPoly2d(TestCase):
 
     def test_constructor(self):
         ## The number of the coeffs must be valid ones.
-        valid_numcoeffs = set((3, 6, 10, 15))
+        valid_numcoeffs = set((3, 6, 10, 15, 21))
         invalids = set(range(100)).difference(valid_numcoeffs)
         for n in invalids:
             c = np.random.random(n)
@@ -35,7 +35,7 @@ class TestPoly2dSpatioal(TestCase):
         assert_raises(ValueError, poly2d_spatial, cx, cy)
 
         ## The number of the coeffs must be valid ones.
-        valid_numcoeffs = set((3, 6, 10, 15))
+        valid_numcoeffs = set((3, 6, 10, 15, 21))
         invalids = set(range(100)).difference(valid_numcoeffs)
         for n in invalids:
             cx = np.random.random(n)

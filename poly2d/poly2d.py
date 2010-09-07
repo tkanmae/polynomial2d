@@ -17,6 +17,7 @@ _polyfunc = {
     2: _poly2d.poly2,
     3: _poly2d.poly3,
     4: _poly2d.poly4,
+    5: _poly2d.poly5,
 }
 
 
@@ -126,6 +127,27 @@ def _kernel_mat(x, y, m):
         X[:,12] = X[:,3]*X[:,5]  # x^2 y^2
         X[:,13] = x*X[:,9]       # x y^3
         X[:,14] = X[:,5]*X[:,5]  # y^4
+    elif m == 5:
+        X[:,1]  = x
+        X[:,2]  = y
+        X[:,3]  = x*x
+        X[:,4]  = x*y
+        X[:,5]  = y*y
+        X[:,6]  = X[:,3]*x       # x^3
+        X[:,7]  = X[:,3]*y       # x^2 y
+        X[:,8]  = x*X[:,5]       # x y^2
+        X[:,9]  = y*X[:,5]       # y^3
+        X[:,10] = X[:,3]*X[:,3]  # x^4
+        X[:,11] = X[:,6]*y       # x^3 y
+        X[:,12] = X[:,3]*X[:,5]  # x^2 y^2
+        X[:,13] = x*X[:,9]       # x y^3
+        X[:,14] = X[:,5]*X[:,5]  # y^4
+        X[:,15] = X[:,3]*X[:,6]  # x^5
+        X[:,16] = X[:,10]*y      # x^4 y
+        X[:,17] = X[:,6]*X[:,5]  # x^3 y^2
+        X[:,18] = X[:,3]*X[:,9]  # x^2 y^3
+        X[:,19] = x*X[:,14]      # x y^4
+        X[:,20] = X[:,5]*X[:,9]  # y^5
     else:
         raise ValueError('Invalid polynomial order: {0}'.format(m))
     return X

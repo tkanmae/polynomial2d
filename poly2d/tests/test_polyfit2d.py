@@ -10,8 +10,8 @@ from poly2d import (poly2d, polyfit2d, poly2d_spatial, polyfit2d_spatial)
 def _realistic_coeffs(order):
     """Return realistic polynomial coefficients."""
     from random import random
-    # -- Pairs of the magnitude and the number of coefficients.
-    mags = ((100*random(), 1), (100, 2), (10, 3), (1, 4), (0.1, 5))
+    ## Pairs of the magnitude and the number of coefficients.
+    mags = ((100*random(), 1), (100, 2), (10, 3), (1, 4), (0.1, 5), (0.01, 6))
     if order < 1:
         raise ValueError('`order` must be larger than 1.')
     ret = []
@@ -44,6 +44,9 @@ class TestPoly2d(TestCase):
         for i in range(10):
             self._run(_realistic_coeffs(4), order=4)
 
+    def test_polyorder5(self):
+        for i in range(10):
+            self._run(_realistic_coeffs(5), order=5)
 
 class TestPoly2dSpatial(TestCase):
 
@@ -68,6 +71,10 @@ class TestPoly2dSpatial(TestCase):
     def test_polyorder4(self):
         for i in range(10):
             self._run(_realistic_coeffs(4), _realistic_coeffs(4), order=4)
+
+    def test_polyorder5(self):
+        for i in range(10):
+            self._run(_realistic_coeffs(5), _realistic_coeffs(5), order=5)
 
     def test_affine_scale(self):
         cx = [0, 3, 0]
