@@ -1,27 +1,14 @@
 #!/usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 from __future__ import division
-from math import (cos, sin, radians)
 import numpy as np
 from numpy.testing import *
 
-from poly2d import poly2d, polyfit2d
+from poly2d import (poly2d, polyfit2d, poly2d_spatial, polyfit2d_spatial)
 
 
-def run(cx0, cy0, order):
-    x = 100 * np.random.random(1000)
-    y = 100 * np.random.random(1000)
-    p = poly2d(cx0, cy0)
-
-    xt, yt = p(x, y)
-    cx, cy = polyfit2d(x, y, xt, yt, order)
-
-    assert_array_almost_equal(cx, cx0)
-    assert_array_almost_equal(cy, cy0)
-
-
-def realistic_coeffs(order):
-    """Emulate realistic polynomial coefficients."""
+def _realistic_coeffs(order):
+    """Return realistic polynomial coefficients."""
     from random import random
     # -- Pairs of the magnitude and the number of coefficients.
     mags = ((100*random(), 1), (100, 2), (10, 3), (1, 4), (0.1, 5))
@@ -29,72 +16,78 @@ def realistic_coeffs(order):
         raise ValueError('`order` must be larger than 1.')
     ret = []
     for i, (mag, n) in enumerate(mags):
-        ret.append([random() for i in range(n)])
-        if i == order:
-            break
+        ret.append([mag*random() for j in range(n)])
+        if i == order: break
     return np.hstack(ret)
 
 
-class TestAffineTransform(TestCase):
+class TestPoly2d(TestCase):
 
-    def setUp(self):
+    def _run(self, c0, order):
+        x = 100 * np.random.random(1000)
+        y = 100 * np.random.random(1000)
+
+        z = poly2d(c0)(x, y)
+        c = polyfit2d(x, y, z, order)
+
+        assert_array_almost_equal(c, c0)
+
+    def test_polyorder2(self):
+        for i in range(10):
+            self._run(_realistic_coeffs(2), order=2)
+
+    def test_polyorder3(self):
+        for i in range(10):
+            self._run(_realistic_coeffs(3), order=3)
+
+    def test_polyorder4(self):
+        for i in range(10):
+            self._run(_realistic_coeffs(4), order=4)
+
+
+class TestPoly2dSpatial(TestCase):
+
+    def _run(self, cx0, cy0, order):
+        x = 100 * np.random.random(1000)
+        y = 100 * np.random.random(1000)
+
+        xt, yt = poly2d_spatial(cx0, cy0)(x, y)
+        cx, cy = polyfit2d_spatial(x, y, xt, yt, order)
+
+        assert_array_almost_equal(cx, cx0)
+        assert_array_almost_equal(cy, cy0)
+
+    def test_polyorder2(self):
+        for i in range(10):
+            self._run(_realistic_coeffs(2), _realistic_coeffs(2), order=2)
+
+    def test_polyorder3(self):
+        for i in range(10):
+            self._run(_realistic_coeffs(3), _realistic_coeffs(3), order=3)
+
+    def test_polyorder4(self):
+        for i in range(10):
+            self._run(_realistic_coeffs(4), _realistic_coeffs(4), order=4)
+
+    def test_affine_scale(self):
+        cx = [0, 3, 0]
+        cy = [0, 0, 1/3]
+        self._run(cx, cy, order=1)
+
+    def test_affine_translation(self):
+        cx = [10, 0, 0]
+        cy = [-7, 0, 0]
+        self._run(cx, cy, order=1)
+
+    def test_affine_rotation(self):
+        from math import (cos, sin, radians)
+
         theta = 60
-        self.cos_theta = cos(radians(theta))
-        self.sin_theta = sin(radians(theta))
-
-        self.tx = 10
-        self.ty = -7
-
-        self.scx = 3
-        self.scy = 1 / 3
-
-    def test_scale(self):
-        cx = [0, self.scx, 0]
-        cy = [0, 0, self.scy]
-        run(cx, cy, order=1)
-
-    def test_trans(self):
-        cx = [self.tx, 0, 0]
-        cy = [self.ty, 0, 0]
-        run(cx, cy, order=1)
-
-    def test_rot(self):
-        cx = [0,  self.cos_theta, self.sin_theta]
-        cy = [0, -self.sin_theta, self.cos_theta]
-        run(cx, cy, order=1)
-
-    def test_transform(self):
-        for i in range(100):
-            cx = realistic_coeffs(1)
-            cy = realistic_coeffs(1)
-            run(cx, cy, order=1)
-
-
-class TestPoly2Transform(TestCase):
-
-    def test_transform(self):
-        for i in range(10):
-            cx = realistic_coeffs(2)
-            cy = realistic_coeffs(2)
-            run(cx, cy, order=2)
-
-
-class TestPoly3Transform(TestCase):
-
-    def test_transform(self):
-        for i in range(10):
-            cx = realistic_coeffs(3)
-            cy = realistic_coeffs(3)
-            run(cx, cy, order=3)
-
-
-class TestPoly4Transform(TestCase):
-
-    def test_transform(self):
-        for i in range(10):
-            cx = realistic_coeffs(4)
-            cy = realistic_coeffs(4)
-            run(cx, cy, order=4)
+        sin_theta = sin(radians(theta))
+        cos_theta = cos(radians(theta))
+        cx = [0,  cos_theta, sin_theta]
+        cy = [0, -sin_theta, cos_theta]
+        self._run(cx, cy, order=1)
 
 
 if __name__ == '__main__':

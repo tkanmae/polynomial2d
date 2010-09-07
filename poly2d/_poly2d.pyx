@@ -13,6 +13,7 @@ cimport cython
 from numpy cimport *
 
 
+## Initialize numpy.
 import_array()
 
 ctypedef float64_t DTYPE_t
@@ -20,116 +21,85 @@ ctypedef float64_t DTYPE_t
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly1(ndarray[DTYPE_t, ndim=1] xi,
-          ndarray[DTYPE_t, ndim=1] yi,
-          ndarray[DTYPE_t, ndim=1] cx,
-          ndarray[DTYPE_t, ndim=1] cy):
+def poly1(ndarray[DTYPE_t, ndim=1] x,
+          ndarray[DTYPE_t, ndim=1] y,
+          ndarray[DTYPE_t, ndim=1] c):
     cdef:
-        Py_ssize_t n = xi.shape[0]
-        ndarray[DTYPE_t, ndim=1] xo = \
+        Py_ssize_t n = x.shape[0]
+        ndarray[DTYPE_t, ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
-        ndarray[DTYPE_t, ndim=1] yo = \
-                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
-
-    cdef Py_ssize_t i
+        Py_ssize_t i
 
     for i in range(n):
-        xo[i] = cx[0] + cx[1]*xi[i] + cx[2]*yi[i]
-        yo[i] = cy[0] + cy[1]*xi[i] + cy[2]*yi[i]
+        z[i] = c[0] + c[1]*x[i] + c[2]*y[i]
 
-    return xo, yo
+    return z
 
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly2(ndarray[DTYPE_t, ndim=1] xi,
-          ndarray[DTYPE_t, ndim=1] yi,
-          ndarray[DTYPE_t, ndim=1] cx,
-          ndarray[DTYPE_t, ndim=1] cy):
+def poly2(ndarray[DTYPE_t, ndim=1] x,
+          ndarray[DTYPE_t, ndim=1] y,
+          ndarray[DTYPE_t, ndim=1] c):
     cdef:
-        Py_ssize_t n = xi.shape[0]
-        ndarray[DTYPE_t, ndim=1] xo = \
+        Py_ssize_t n = x.shape[0]
+        ndarray[DTYPE_t, ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
-        ndarray[DTYPE_t, ndim=1] yo = \
-                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
-
-    cdef:
-        double x, y
         Py_ssize_t i
+        double x1, y1
 
     for i in range(n):
-        x = xi[i]
-        y = yi[i]
+        x1 = x[i]
+        y1 = y[i]
+        z[i] = c[0] + c[1]*x1 + c[2]*y1 + c[3]*x1*x1 + c[4]*x1*y1 + c[5]*y1*y1
 
-        xo[i] = cx[0] + cx[1]*x + cx[2]*y + \
-                cx[3]*x*x + cx[4]*x*y + cx[5]*y*y
-        yo[i] = cy[0] + cy[1]*x + cy[2]*y + \
-                cy[3]*x*x + cy[4]*x*y + cy[5]*y*y
-
-    return xo, yo
+    return z
 
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly3(ndarray[DTYPE_t, ndim=1] xi,
-          ndarray[DTYPE_t, ndim=1] yi,
-          ndarray[DTYPE_t, ndim=1] cx,
-          ndarray[DTYPE_t, ndim=1] cy):
+def poly3(ndarray[DTYPE_t, ndim=1] x,
+          ndarray[DTYPE_t, ndim=1] y,
+          ndarray[DTYPE_t, ndim=1] c):
     cdef:
-        Py_ssize_t n = xi.shape[0]
-        ndarray[DTYPE_t, ndim=1] xo = \
+        Py_ssize_t n = x.shape[0]
+        ndarray[DTYPE_t, ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
-        ndarray[DTYPE_t, ndim=1] yo = \
-                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
-
-    cdef:
-        double x, x2, x3
-        double y, y2, y3
         Py_ssize_t i
+        double x1, x2, x3
+        double y1, y2, y3
 
     for i in range(n):
-        x = xi[i]; x2 = x*x; x3 = x2*x
-        y = yi[i]; y2 = y*y; y3 = y2*y
+        x1 = x[i]; x2 = x1*x1; x3 = x2*x1
+        y1 = y[i]; y2 = y1*y1; y3 = y2*y1
 
-        xo[i] = cx[0] + cx[1]*x + cx[2]*y + \
-                cx[3]*x2 + cx[4]*x*y + cx[5]*y2 + \
-                cx[6]*x3 + cx[7]*x2*y + cx[8]*x*y2 + cx[9]*y3
-        yo[i] = cy[0] + cy[1]*x + cy[2]*y + \
-                cy[3]*x2 + cy[4]*x*y + cy[5]*y2 + \
-                cy[6]*x3 + cy[7]*x2*y + cy[8]*x*y2 + cy[9]*y3
+        z[i] = c[0] + c[1]*x1 + c[2]*y1 + \
+               c[3]*x2 + c[4]*x1*y1 + c[5]*y2 + \
+               c[6]*x3 + c[7]*x2*y1 + c[8]*x1*y2 + c[9]*y3
 
-    return xo, yo
+    return z
 
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly4(ndarray[DTYPE_t, ndim=1] xi,
-          ndarray[DTYPE_t, ndim=1] yi,
-          ndarray[DTYPE_t, ndim=1] cx,
-          ndarray[DTYPE_t, ndim=1] cy):
+def poly4(ndarray[DTYPE_t, ndim=1] x,
+          ndarray[DTYPE_t, ndim=1] y,
+          ndarray[DTYPE_t, ndim=1] c):
     cdef:
-        Py_ssize_t n = xi.shape[0]
-        ndarray[DTYPE_t, ndim=1] xo = \
+        Py_ssize_t n = x.shape[0]
+        ndarray[DTYPE_t, ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
-        ndarray[DTYPE_t, ndim=1] yo = \
-                PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
-
-    cdef:
-        double x, x2, x3, x4
-        double y, y2, y3, y4
         Py_ssize_t i
+        double x1, x2, x3, x4
+        double y1, y2, y3, y4
 
     for i in range(n):
-        x = xi[i]; x2 = x*x; x3 = x2*x; x4 = x2*x2
-        y = yi[i]; y2 = y*y; y3 = y2*y; y4 = y2*y2
+        x1 = x[i]; x2 = x1*x1; x3 = x2*x1; x4 = x2*x2
+        y1 = y[i]; y2 = y1*y1; y3 = y2*y1; y4 = y2*y2
 
-        xo[i] = cx[0] + cx[1]*x + cx[2]*y + \
-                cx[3]*x2 + cx[4]*x*y + cx[5]*y2 + \
-                cx[6]*x3 + cx[7]*x2*y + cx[8]*x*y2 + cx[9]*y3 + \
-                cx[10]*x4 + cx[11]*x3*y + cx[12]*x2*y2 + cx[13]*x*y3 + cx[14]*y4
-        yo[i] = cy[0] + cy[1]*x + cy[2]*y + \
-                cy[3]*x2 + cy[4]*x*y + cy[5]*y2 + \
-                cy[6]*x3 + cy[7]*x2*y + cy[8]*x*y2 + cy[9]*y3 + \
-                cy[10]*x4 + cy[11]*x3*y + cy[12]*x2*y2 + cy[13]*x*y3 + cy[14]*y4
+        z[i] = c[0] + c[1]*x1 + c[2]*y1 + \
+               c[3]*x2 + c[4]*x1*y1 + c[5]*y2 + \
+               c[6]*x3 + c[7]*x2*y1 + c[8]*x1*y2 + c[9]*y3 + \
+               c[10]*x4 + c[11]*x3*y1 + c[12]*x2*y2 + c[13]*x1*y3 + c[14]*y4
 
-    return xo, yo
+    return z

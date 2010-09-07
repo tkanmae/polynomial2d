@@ -9,7 +9,7 @@ from numpy.linalg import lstsq
 import _poly2d
 
 
-__all__ = ['poly2d', 'polyfit2d']
+__all__ = ['poly2d', 'polyfit2d', 'poly2d_spatial', 'polyfit2d_spatial']
 
 
 _polyfunc = {
@@ -25,7 +25,7 @@ class RankWarning(UserWarning):
     pass
 
 
-def ncoeffs(order):
+def num_coeffs(order):
     """Return the number of the coefficients for a given polynomial
     order.
 
@@ -36,19 +36,19 @@ def ncoeffs(order):
 
     Returns
     -------
-    n : int
+    num : int
         The number of the coefficients.
     """
     return 3 + (order-1)*(order+4) // 2
 
 
-def order(ncoeffs):
+def order(num_coeffs):
     """Return the polynomial order for a given number of the
     coefficients.
 
     Parameters
     ----------
-    ncoeffs : int
+    num_coeffs : int
         The number of the coeefficients.
 
     Returns
@@ -56,7 +56,7 @@ def order(ncoeffs):
     order : int
         The polynomial order.
     """
-    return int((sqrt(8*ncoeffs+1) - 3) // 2)
+    return int((sqrt(8*num_coeffs+1) - 3) // 2)
 
 
 def _kernel_mat(x, y, m):
@@ -89,7 +89,7 @@ def _kernel_mat(x, y, m):
     """
     x = np.asarray(x)
     y = np.asarray(y)
-    X = np.ones((x.size, ncoeffs(m)), x.dtype)
+    X = np.ones((x.size, num_coeffs(m)), x.dtype)
 
     if m == 1:
         X[:,1] = x
@@ -131,11 +131,95 @@ def _kernel_mat(x, y, m):
     return X
 
 
-def polyfit2d(x, y, xt, yt, order=1, rcond=None, full_output=False):
+def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
+    """Return the polynomial coefficients determined by the least square fit.
+
+    z = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
+
+    Parameters
+    ----------
+    x : array_like, shape (M,)
+        The x-coordinates of the M sample points.
+    y : array_like, shape (M,)
+        The y-coordinates of the M sample points.
+    z : array_like, shape (M,)
+        The z-coordinates of the M sample points.
+
+    order : int, optional
+        The order of the fitting polynomial.
+    rcond : float, optional
+        The relative condition of the fit.  Singular values smaller than
+        this number relative to the largest singular value will be
+        ignored.
+    full_output : {True, False}, optional
+        Just the coefficients are returned if False, and diagnostic
+        information from the SVD is also returned if True.
+
+    Returns
+    -------
+    c : ndarray
+        The polynomial coefficients in increasing powers.
+
+    Warns
+    -----
+    RankWarning
+        The rank of the coefficient matrix in the least-squares fit is
+        deficient.  The warning is only raised if `full_output` = False.
+
+    See Also
+    --------
+    numpy.linalg.lstsq
+    numpy.lib.polynomial.polyfit
+    """
+    x = np.asarray(x, np.float64)
+    y = np.asarray(y, np.float64)
+    z = np.asarray(z, np.float64)
+
+    ## Check inputs.
+    if x.size != y.size or x.size != z.size:
+        raise ValueError("`x`, `y`, and `z` must have the same size.")
+    if x.ndim != 1:
+        raise ValueError("`x` must be 1-dim.")
+    if y.ndim != 1:
+        raise ValueError("`y` must be 1-dim.")
+    if z.ndim != 1:
+        raise ValueError("`z` must be 1-dim.")
+
+    ## Set `rcond`
+    if rcond is None:
+        rcond = x.size * np.finfo(x.dtype).eps
+
+    ## Scale `x` and `y`.
+    scale = max(abs(x.max()), abs(y.max()))
+    if scale != 0:
+        x /= scale
+        y /= scale
+
+    ## Solve the least square equations.
+    v = _kernel_mat(x, y, order)
+    c, resids, rank, s = lstsq(v, z)
+
+    ## Warn on rank deficit, which indicates an ill-conditioned matrix.
+    if rank != num_coeffs(order) and not full_output:
+        msg = "`polyfit2d` may be poorly conditioned"
+        warnings.warn(msg, RankWarning)
+
+    ## Scale the returned coefficients.
+    if scale != 0:
+        S = _kernel_mat([scale], [scale], order)[0]
+        c /= S
+
+    if full_output:
+        return c, c, resids, s, rank, rcond
+    else:
+        return c
+
+
+def polyfit2d_spatial(x, y, xt, yt, order=1, rcond=None, full_output=False):
     """Return the polynomial coefficients determined by the least square fit.
 
     x' = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
-    y' = cy[0] + cy[1]*x + cy[2]*y + ... + cy[n-1]*x*y**(n-1) + cy[n]*y**n
+    y' = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
 
     Parameters
     ----------
@@ -179,7 +263,7 @@ def polyfit2d(x, y, xt, yt, order=1, rcond=None, full_output=False):
     xt = np.asarray(xt, np.float64)
     yt = np.asarray(yt, np.float64)
 
-    # -- Check inputs.
+    ## Check inputs.
     if x.size != y.size or x.size != xt.size or x.size != yt.size:
         raise ValueError("`x`, `y`, `xt`, and `yt` must have the same size.")
     if x.ndim != 1:
@@ -191,27 +275,27 @@ def polyfit2d(x, y, xt, yt, order=1, rcond=None, full_output=False):
     if yt.ndim != 1:
         raise ValueError("`yt` must be 1-dim.")
 
-    # -- Set `rcond`
+    ## Set `rcond`
     if rcond is None:
         rcond = x.size * np.finfo(x.dtype).eps
 
-    # -- Scale `x` and `y`.
+    ## Scale `x` and `y`.
     scale = max(abs(x.max()), abs(y.max()))
     if scale != 0:
         x /= scale
         y /= scale
 
-    # -- Solve the least square equations.
+    ## Solve the least square equations.
     v = _kernel_mat(x, y, order)
     cx, resids_x, rank, s_x = lstsq(v, xt)
     cy, resids_y, rank, s_y = lstsq(v, yt)
 
-    # -- Warn on rank deficit, which indicates an ill-conditioned matrix.
-    if rank != ncoeffs(order) and not full_output:
+    ## Warn on rank deficit, which indicates an ill-conditioned matrix.
+    if rank != num_coeffs(order) and not full_output:
         msg = "`polyfit2d` may be poorly conditioned"
         warnings.warn(msg, RankWarning)
 
-    # -- Scale the returned coefficients.
+    ## Scale the returned coefficients.
     if scale != 0:
         S = _kernel_mat([scale], [scale], order)[0]
         cx /= S
@@ -223,7 +307,99 @@ def polyfit2d(x, y, xt, yt, order=1, rcond=None, full_output=False):
         return cx, cy
 
 
-class poly2d(object):
+class _poly2d(object):
+    _max_order = len(_polyfunc)
+    _valid_num_coeffs = tuple(num_coeffs(m) for m in range(1, _max_order+1))
+
+    @property
+    def order(self):
+        """The order of the polynomial."""
+        return self._order
+
+
+class poly2d(_poly2d):
+    """A 2-dimensional polynomial transform class.
+
+    z = c[0] + c[1]*x + c[2]*y + ... + c[n-1]*x*y**(n-1) + c[n]*y**n
+
+    Parameters
+    ----------
+    c : array_like
+        The polynomial coefficients in *increasing* powers.
+
+    Attributes
+    ----------
+    c : array_like
+        The polynomial coefficients in *increasing* powers.
+    order : int
+        The order of the polynomial.
+    """
+    def __init__(self, c):
+        """
+        Parameters
+        ----------
+        c : array_like
+            The polynomial coefficients for the x'-coordinate 'in
+            *increasing* powers.
+
+        Raises
+        ------
+        ValueError
+        """
+        c = np.atleast_1d(c) + 0.0
+        ## Check the inputs.
+        if c.ndim != 1:
+            raise ValueError("`c` must be 1-dim.")
+        if len(c) not in self._valid_num_coeffs:
+            msg = ('Invalid number of the coefficients: {0}\n'
+                   'Must be one of {1}'.format(len(c), str(self._valid_num_coeffs)))
+            raise ValueError(msg)
+
+        self._c = c
+        self._order = order(len(self._c))
+
+    def __call__(self, x, y):
+        """Return the transformed coordinates.
+
+        Parameters
+        ----------
+        x : array_like, shape(M,)
+            The x-coordinate.
+        y : array_like, shape(M,)
+            The y-coordinate.
+
+        Returns
+        -------
+        xt : ndarray, shape(M,)
+            The transformed x-coordinate.
+        yt : ndarray, shape(M,)
+            The transformed y-coordinate.
+
+        Raises
+        ------
+        ValueError
+            If `x` or `y` are not consistent.
+        """
+        x = np.atleast_1d(x) + 0.0
+        y = np.atleast_1d(y) + 0.0
+
+        ## Chek inputs.
+        if x.size != y.size:
+            raise ValueError('`x` and `y` must have the same size.')
+        if x.ndim != 1:
+            raise ValueError("`x` must be 1-dim.")
+        if y.ndim != 1:
+            raise ValueError("`y` must be 1-dim.")
+
+        return _polyfunc[self._order](x, y, self._c)
+
+    @property
+    def c(self):
+        """The polynomial coefficients for the x'-coordinate."""
+        return self._c
+
+
+class poly2d_spatial(_poly2d):
     """A 2-dimensional polynomial transform class.
 
     x' = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
@@ -248,12 +424,7 @@ class poly2d(object):
         *increasing* powers.
     order : int
         The order of the polynomial.
-    valid_ncoeffs : tuple of ints
-        The valid number of the coefficients per coordinate.
     """
-    max_order = len(_polyfunc)
-    valid_ncoeffs = tuple(ncoeffs(m) for m in range(1, max_order+1))
-
     def __init__(self, cx, cy):
         """
         Parameters
@@ -280,9 +451,9 @@ class poly2d(object):
             raise ValueError("`cx` must be 1-dim.")
         if cy.ndim != 1:
             raise ValueError("`cy` must be 1-dim.")
-        if len(cx) not in self.valid_ncoeffs:
+        if len(cx) not in self._valid_num_coeffs:
             msg = ('Invalid number of the coefficients: {0}\n'
-                   'Must be one of {1}'.format(len(cx), str(self.valid_ncoeffs)))
+                   'Must be one of {1}'.format(len(cx), str(self._valid_num_coeffs)))
             raise ValueError(msg)
 
         self._cx = cx
@@ -323,12 +494,10 @@ class poly2d(object):
         if y.ndim != 1:
             raise ValueError("`y` must be 1-dim.")
 
-        return _polyfunc[self._order](x, y, self._cx, self._cy)
+        xt = _polyfunc[self._order](x, y, self._cx)
+        yt = _polyfunc[self._order](x, y, self._cy)
 
-    @property
-    def order(self):
-        """The order of the polynomial."""
-        return self._order
+        return xt, yt
 
     @property
     def cx(self):
