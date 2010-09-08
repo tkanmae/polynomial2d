@@ -9,7 +9,7 @@ from numpy.linalg import lstsq
 import _poly2d
 
 
-__all__ = ['poly2d', 'polyfit2d', 'poly2d_spatial', 'polyfit2d_spatial']
+__all__ = ['poly2d', 'polyfit2d', 'poly2d_transform', 'polyfit2d_transform']
 
 
 _polyfunc = {
@@ -186,7 +186,7 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
         return c
 
 
-def polyfit2d_spatial(x, y, xt, yt, order=1, rcond=None, full_output=False):
+def polyfit2d_transform(x, y, xt, yt, order=1, rcond=None, full_output=False):
     """Return the polynomial coefficients determined by the least square fit.
 
     x' = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
@@ -367,7 +367,7 @@ class poly2d(_poly2d):
         return self._c
 
 
-class poly2d_spatial(_poly2d):
+class poly2d_transform(_poly2d):
     """A 2-dimensional polynomial transform class.
 
     x' = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n

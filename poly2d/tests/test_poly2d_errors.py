@@ -3,7 +3,7 @@
 import numpy as np
 from numpy.testing import *
 
-from poly2d import (poly2d, polyfit2d, poly2d_spatial, polyfit2d_spatial)
+from poly2d import (poly2d, polyfit2d, poly2d_transform, polyfit2d_transform)
 
 
 class TestPoly2d(TestCase):
@@ -18,18 +18,18 @@ class TestPoly2d(TestCase):
         assert_raises(ValueError, p, x, y)
 
 
-class TestPoly2dSpatioal(TestCase):
+class TestPoly2dTransform(TestCase):
 
     def test_constructor(self):
         ## cx and cy must have the same size.
         cx = [1, 2, 3]
         cy = [1, 2, 3, 4]
-        assert_raises(ValueError, poly2d_spatial, cx, cy)
+        assert_raises(ValueError, poly2d_transform, cx, cy)
 
     def test_call(self):
         cx = [1, 2, 3]
         cy = [1, 2, 3]
-        p = poly2d_spatial(cx, cy)
+        p = poly2d_transform(cx, cy)
 
         ## x and y must have the same size.
         x = np.random.random(10)
@@ -51,7 +51,7 @@ class TestPolyfit2d(TestCase):
         assert_raises(ValueError, polyfit2d, e, z, z)
 
 
-class TestPolyfit2dSpatial(TestCase):
+class TestPolyfit2dTransform(TestCase):
 
     def test_input_size(self):
         x  = np.random.random(10)
@@ -61,10 +61,10 @@ class TestPolyfit2dSpatial(TestCase):
 
         ## The input must have the same size.
         e = np.random.random(11)
-        assert_raises(ValueError, polyfit2d_spatial, x, y, e, yt)
-        assert_raises(ValueError, polyfit2d_spatial, x, y, xt, e)
-        assert_raises(ValueError, polyfit2d_spatial, x, e, xt, yt)
-        assert_raises(ValueError, polyfit2d_spatial, e, y, xt, yt)
+        assert_raises(ValueError, polyfit2d_transform, x, y, e, yt)
+        assert_raises(ValueError, polyfit2d_transform, x, y, xt, e)
+        assert_raises(ValueError, polyfit2d_transform, x, e, xt, yt)
+        assert_raises(ValueError, polyfit2d_transform, e, y, xt, yt)
 
 
 if __name__ == '__main__':

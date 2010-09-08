@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as np
 from numpy.testing import *
 
-from poly2d import (poly2d, polyfit2d, poly2d_spatial, polyfit2d_spatial)
+from poly2d import (poly2d, polyfit2d, poly2d_transform, polyfit2d_transform)
 
 
 def _realistic_coeffs(order):
@@ -48,14 +48,15 @@ class TestPoly2d(TestCase):
         for i in range(10):
             self._run(_realistic_coeffs(5), order=5)
 
+
 class TestPoly2dSpatial(TestCase):
 
     def _run(self, cx0, cy0, order):
         x = 100 * np.random.random(1000)
         y = 100 * np.random.random(1000)
 
-        xt, yt = poly2d_spatial(cx0, cy0)(x, y)
-        cx, cy = polyfit2d_spatial(x, y, xt, yt, order)
+        xt, yt = poly2d_transform(cx0, cy0)(x, y)
+        cx, cy = polyfit2d_transform(x, y, xt, yt, order)
 
         assert_array_almost_equal(cx, cx0)
         assert_array_almost_equal(cy, cy0)
