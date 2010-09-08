@@ -35,5 +35,4 @@ if __name__ == '__main__':
           author_email  = 'tkanmae@gmail.com',
           keywords      = ['numpy', 'data', 'science'],
           configuration = configuration,
-          test_suite    = 'nose.collector',
         )
