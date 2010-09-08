@@ -64,16 +64,16 @@ def vandermonde(x, y, order):
     """Return the Vandermonde matrix for a given order.
 
     [1, x[0], y[0], ... , x[0]*y[0]**(n-1), y[0]**n]
-    [1, x[1], y[1], ... , x[1]*y[1]**(M-1), y[1]**n]
-    ...
-    ...
+    [1, x[1], y[1], ... , x[1]*y[1]**(n-1), y[1]**n]
+    ...                                          ...
+    ...                                          ...
     [1, x[M], y[M], ... , x[M]*y[M]**(n-1), y[M]**n]
 
     Parameters
     ----------
-    x : ndarray
+    x : array_like, shape (M,)
         The x-coordinate of M sample points.
-    y : ndarray
+    y : array_like, shape (M,)
         The y-coordinate of M sample points.
     order : int
         The order of the polynomial.
@@ -82,14 +82,12 @@ def vandermonde(x, y, order):
     -------
     V : ndarray
         The Vandermonde matrix.
-
-    Raises
-    ------
-    ValueError
-        If m is larger than 4.
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    if x.ndim != 1: raise ValueError("`x` must be 1-dim")
+    if y.ndim != 1: raise ValueError("`y` must be 1-dim")
+
     n = (order+1)*(order+2) // 2
     V = np.zeros((x.size, n), x.dtype)
 
@@ -103,7 +101,7 @@ def vandermonde(x, y, order):
 
 
 def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
-    """Return the polynomial coefficients determined by the least square fit.
+    """Return the polynomial coefficients determined by the least-square fit.
 
     z = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
 
@@ -130,6 +128,10 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     -------
     c : ndarray
         The polynomial coefficients in ascending powers.
+    residuals, rank, singular_values, rcond : present only if `full_output` = True
+        Residuals of the least-squares fit, the effective rank of the scaled
+        Vandermonde coefficient matrix, its singular values, and the specified
+        value of `rcond`. For more details, see `numpy.linalg.lstsq`.
 
     Warns
     -----
@@ -149,17 +151,12 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     ## Check inputs.
     if x.size != y.size or x.size != z.size:
         raise ValueError("`x`, `y`, and `z` must have the same size.")
-    if x.ndim != 1:
-        raise ValueError("`x` must be 1-dim.")
-    if y.ndim != 1:
-        raise ValueError("`y` must be 1-dim.")
-    if z.ndim != 1:
-        raise ValueError("`z` must be 1-dim.")
-
+    if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
+    if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
+    if z.ndim != 1: raise ValueError("`z` must be 1-dim.")
     ## Set `rcond`
     if rcond is None:
         rcond = x.size * np.finfo(x.dtype).eps
-
     ## Scale `x` and `y`.
     scale = max(abs(x.max()), abs(y.max()))
     if scale != 0:
@@ -168,39 +165,39 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
 
     ## Solve the least square equations.
     v = vandermonde(x, y, order)
-    c, resids, rank, s = lstsq(v, z)
+    c, rsq, rank, s = lstsq(v, z)
 
     ## Warn on rank deficit, which indicates an ill-conditioned matrix.
     if rank != num_coeffs(order) and not full_output:
         msg = "`polyfit2d` may be poorly conditioned"
         warnings.warn(msg, RankWarning)
-
     ## Scale the returned coefficients.
     if scale != 0:
         S = vandermonde([scale], [scale], order)[0]
         c /= S
 
     if full_output:
-        return c, c, resids, s, rank, rcond
+        return c, rsq, s, rank, rcond
     else:
         return c
 
 
-def polyfit2d_transform(x, y, xt, yt, order=1, rcond=None, full_output=False):
-    """Return the polynomial coefficients determined by the least square fit.
+def polyfit2d_transform(x1, y1, x2, y2, order=1, rcond=None, full_output=False):
+    """Return the coefficients of 2-dim polynomial transform for determined by
+    the least square fit.
 
     x' = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
-    y' = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
+    y' = cy[0] + cy[1]*x + cy[2]*y + ... + cy[n-1]*x*y**(n-1) + cy[n]*y**n
 
     Parameters
     ----------
-    x : array_like, shape (M,)
+    x1: array_like, shape (M,)
         The x-coordinates of the M sample points.
-    y : array_like, shape (M,)
+    y1: array_like, shape (M,)
         The y-coordinates of the M sample points.
-    xt : array_like, shape (M,)
+    x2 : array_like, shape (M,)
         The x'-coordinates of the M sample points.
-    yt : array_like, shape (M,)
+    y2 : array_like, shape (M,)
         The y'-coordinates of the M sample points.
 
     order : int, optional
@@ -217,6 +214,10 @@ def polyfit2d_transform(x, y, xt, yt, order=1, rcond=None, full_output=False):
     -------
     cx, cy : ndarray
         The polynomial coefficients in ascending powers.
+    rsqx, rsqy, rank, sx, sy, rcond : present only if `full_output` = True
+        Residuals of the least-squares fit, the effective rank of the scaled
+        Vandermonde coefficient matrix, its singular values, and the specified
+        value of `rcond`. For more details, see `numpy.linalg.lstsq`.
 
     Warns
     -----
@@ -229,43 +230,36 @@ def polyfit2d_transform(x, y, xt, yt, order=1, rcond=None, full_output=False):
     numpy.linalg.lstsq
     numpy.lib.polynomial.polyfit
     """
-    x = np.asarray(x, np.float64)
-    y = np.asarray(y, np.float64)
-    xt = np.asarray(xt, np.float64)
-    yt = np.asarray(yt, np.float64)
+    x1 = np.asarray(x1, np.float64)
+    y1 = np.asarray(y1, np.float64)
+    x2 = np.asarray(x2, np.float64)
+    y2 = np.asarray(y2, np.float64)
 
     ## Check inputs.
-    if x.size != y.size or x.size != xt.size or x.size != yt.size:
-        raise ValueError("`x`, `y`, `xt`, and `yt` must have the same size.")
-    if x.ndim != 1:
-        raise ValueError("`x` must be 1-dim.")
-    if y.ndim != 1:
-        raise ValueError("`y` must be 1-dim.")
-    if xt.ndim != 1:
-        raise ValueError("`xt` must be 1-dim.")
-    if yt.ndim != 1:
-        raise ValueError("`yt` must be 1-dim.")
-
+    if x1.size != y1.size or x1.size != x2.size or x1.size != y2.size:
+        raise ValueError("`x`, `y`, `x2`, and `y2` must have the same size.")
+    if x1.ndim != 1: raise ValueError("`x1` must be 1-dim.")
+    if y1.ndim != 1: raise ValueError("`y1` must be 1-dim.")
+    if x2.ndim != 1: raise ValueError("`x2` must be 1-dim.")
+    if y2.ndim != 1: raise ValueError("`y2` must be 1-dim.")
     ## Set `rcond`
     if rcond is None:
-        rcond = x.size * np.finfo(x.dtype).eps
-
+        rcond = x1.size * np.finfo(x1.dtype).eps
     ## Scale `x` and `y`.
-    scale = max(abs(x.max()), abs(y.max()))
+    scale = max(abs(x1.max()), abs(y1.max()))
     if scale != 0:
-        x /= scale
-        y /= scale
+        x1 /= scale
+        y1 /= scale
 
     ## Solve the least square equations.
-    v = vandermonde(x, y, order)
-    cx, resids_x, rank, s_x = lstsq(v, xt)
-    cy, resids_y, rank, s_y = lstsq(v, yt)
+    V = vandermonde(x1, y1, order)
+    cx, rsqx, rank, sx = lstsq(V, x2)
+    cy, rsqy, rank, sy = lstsq(V, y2)
 
     ## Warn on rank deficit, which indicates an ill-conditioned matrix.
     if rank != num_coeffs(order) and not full_output:
         msg = "`polyfit2d` may be poorly conditioned"
         warnings.warn(msg, RankWarning)
-
     ## Scale the returned coefficients.
     if scale != 0:
         S = vandermonde([scale], [scale], order)[0]
@@ -273,31 +267,24 @@ def polyfit2d_transform(x, y, xt, yt, order=1, rcond=None, full_output=False):
         cy /= S
 
     if full_output:
-        return cx, cy, resids_x, resids_y, s_x, s_y, rank, rcond
+        return cx, cy, rsqx, rsqy, sx, sy, rank, rcond
     else:
         return cx, cy
 
 
-class _poly2d(object):
-    @property
-    def order(self):
-        """The order of the polynomial."""
-        return self._order
-
-
-class poly2d(_poly2d):
+class poly2d(object):
     """A 2-dimensional polynomial class.
 
     z = c[0] + c[1]*x + c[2]*y + ... + c[n-1]*x*y**(n-1) + c[n]*y**n
 
     Parameters
     ----------
-    c : array_like
+    coeffs : array_like
         The polynomial coefficients in *ascending* powers.
 
     Attributes
     ----------
-    c : array_like
+    c : array_like, shape (n,)
         The polynomial coefficients in *ascending* powers.
     order : int
         The order of the polynomial.
@@ -306,18 +293,17 @@ class poly2d(_poly2d):
         """
         Parameters
         ----------
-        c : array_like
-            The polynomial coefficients for the x'-coordinate 'in
-            *ascending* powers.
+        coeffs : array_like
+            The polynomial coefficients in *ascending* powers.
 
         Raises
         ------
         ValueError
+            If `c` is not 1-dim.
         """
         c = np.atleast_1d(c) + 0.0
         ## Check the inputs.
-        if c.ndim != 1:
-            raise ValueError("`c` must be 1-dim.")
+        if c.ndim != 1: raise ValueError("`c` must be 1-dim.")
 
         self._c = c
         self._order = order(len(self._c))
@@ -327,33 +313,29 @@ class poly2d(_poly2d):
 
         Parameters
         ----------
-        x : array_like, shape(M,)
+        x : array_like, shape (M,)
             The x-coordinate.
-        y : array_like, shape(M,)
+        y : array_like, shape (M,)
             The y-coordinate.
 
         Returns
         -------
-        xt : ndarray, shape(M,)
-            The transformed x-coordinate.
-        yt : ndarray, shape(M,)
-            The transformed y-coordinate.
+        z : ndarray, shape(M,)
+            The evaluated polynomial.
 
         Raises
         ------
         ValueError
-            If `x` or `y` are not consistent.
+            If either `x` or `y` are not 1-dim, or the their sizes are
+            not the same.
         """
         x = np.atleast_1d(x) + 0.0
         y = np.atleast_1d(y) + 0.0
-
         ## Chek inputs.
+        if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
+        if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
         if x.size != y.size:
             raise ValueError('`x` and `y` must have the same size.')
-        if x.ndim != 1:
-            raise ValueError("`x` must be 1-dim.")
-        if y.ndim != 1:
-            raise ValueError("`y` must be 1-dim.")
 
         try:
             return _polyfunc[self._order](x, y, self._c)
@@ -362,12 +344,17 @@ class poly2d(_poly2d):
             return V * self._c
 
     @property
-    def c(self):
-        """The polynomial coefficients for the x'-coordinate."""
+    def coeffs(self):
+        """The polynomial coefficients."""
         return self._c
 
+    @property
+    def order(self):
+        """The order of the polynomial."""
+        return self._order
 
-class poly2d_transform(_poly2d):
+
+class poly2d_transform(object):
     """A 2-dimensional polynomial transform class.
 
     x' = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
@@ -375,19 +362,19 @@ class poly2d_transform(_poly2d):
 
     Parameters
     ----------
-    cx : array_like
+    cx : array_like, shape (n,)
         The polynomial coefficients for the x'-coordinate 'in
         *ascending* powers.
-    cy : array_like
+    cy : array_like, shape (n,)
         The polynomial coefficients for the y'-coordinate 'in
         *ascending* powers.
 
     Attributes
     ----------
-    cx : array_like
+    cx : array_like, shape (n,)
         The polynomial coefficients for the x'-coordinate 'in
         *ascending* powers.
-    cy : array_like
+    cy : array_like, shape (n,)
         The polynomial coefficients for the y'-coordinate 'in
         *ascending* powers.
     order : int
@@ -407,22 +394,20 @@ class poly2d_transform(_poly2d):
         Raises
         ------
         ValueError
-            If `cx` or `cy` are not consistent.
+            If either `cx` or `cy` are not 1-dim, or the their sizes are
+            not the same.
         """
         cx = np.atleast_1d(cx) + 0.0
         cy = np.atleast_1d(cy) + 0.0
 
         # -- Check the inputs.
+        if cx.ndim != 1: raise ValueError("`cx` must be 1-dim.")
+        if cy.ndim != 1: raise ValueError("`cy` must be 1-dim.")
         if cx.size != cy.size:
             raise ValueError("`cx` and `cy` must have the same size.")
-        if cx.ndim != 1:
-            raise ValueError("`cx` must be 1-dim.")
-        if cy.ndim != 1:
-            raise ValueError("`cy` must be 1-dim.")
 
         self._cx = cx
         self._cy = cy
-
         self._order = order(len(self._cx))
 
     def __call__(self, x, y):
@@ -445,18 +430,15 @@ class poly2d_transform(_poly2d):
         Raises
         ------
         ValueError
-            If `x` or `y` are not consistent.
+            If either `x` or `y` are not 1-dim, or the their sizes are
         """
         x = np.atleast_1d(x) + 0.0
         y = np.atleast_1d(y) + 0.0
-
         # -- Chek inputs.
+        if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
+        if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
         if x.size != y.size:
             raise ValueError('`x` and `y` must have the same size.')
-        if x.ndim != 1:
-            raise ValueError("`x` must be 1-dim.")
-        if y.ndim != 1:
-            raise ValueError("`y` must be 1-dim.")
 
         try:
             xt = _polyfunc[self._order](x, y, self._cx)
@@ -476,3 +458,8 @@ class poly2d_transform(_poly2d):
     def cy(self):
         """The polynomial coefficients for the y'-coordinate."""
         return self._cy
+
+    @property
+    def order(self):
+        """The order of the polynomial."""
+        return self._order
