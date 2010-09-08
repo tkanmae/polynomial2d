@@ -8,14 +8,6 @@ from poly2d import (poly2d, polyfit2d, poly2d_spatial, polyfit2d_spatial)
 
 class TestPoly2d(TestCase):
 
-    def test_constructor(self):
-        ## The number of the coeffs must be valid ones.
-        valid_numcoeffs = set((3, 6, 10, 15, 21))
-        invalids = set(range(100)).difference(valid_numcoeffs)
-        for n in invalids:
-            c = np.random.random(n)
-            assert_raises(ValueError, poly2d, c)
-
     def test_call(self):
         c = [1, 2, 3]
         p = poly2d(c)
@@ -33,14 +25,6 @@ class TestPoly2dSpatioal(TestCase):
         cx = [1, 2, 3]
         cy = [1, 2, 3, 4]
         assert_raises(ValueError, poly2d_spatial, cx, cy)
-
-        ## The number of the coeffs must be valid ones.
-        valid_numcoeffs = set((3, 6, 10, 15, 21))
-        invalids = set(range(100)).difference(valid_numcoeffs)
-        for n in invalids:
-            cx = np.random.random(n)
-            cy = np.random.random(n)
-            assert_raises(ValueError, poly2d_spatial, cx, cy)
 
     def test_call(self):
         cx = [1, 2, 3]

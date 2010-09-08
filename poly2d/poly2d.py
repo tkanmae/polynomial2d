@@ -40,7 +40,7 @@ def num_coeffs(order):
     num : int
         The number of the coefficients.
     """
-    return 3 + (order-1)*(order+4) // 2
+    return (order+1)*(order+2) // 2
 
 
 def order(num_coeffs):
@@ -60,8 +60,8 @@ def order(num_coeffs):
     return int((sqrt(8*num_coeffs+1) - 3) // 2)
 
 
-def _kernel_mat(x, y, m):
-    """Return the kernel matrix `X`.
+def vandermonde(x, y, order):
+    """Return the Vandermonde matrix for a given order.
 
     [1, x[0], y[0], ... , x[0]*y[0]**(n-1), y[0]**n]
     [1, x[1], y[1], ... , x[1]*y[1]**(M-1), y[1]**n]
@@ -75,13 +75,13 @@ def _kernel_mat(x, y, m):
         The x-coordinate of M sample points.
     y : ndarray
         The y-coordinate of M sample points.
-    m : int
+    order : int
         The order of the polynomial.
 
     Returns
     -------
-    X : ndarray
-        The kernel matrix.
+    V : ndarray
+        The Vandermonde matrix.
 
     Raises
     ------
@@ -90,67 +90,16 @@ def _kernel_mat(x, y, m):
     """
     x = np.asarray(x)
     y = np.asarray(y)
-    X = np.ones((x.size, num_coeffs(m)), x.dtype)
+    n = (order+1)*(order+2) // 2
+    V = np.zeros((x.size, n), x.dtype)
 
-    if m == 1:
-        X[:,1] = x
-        X[:,2] = y
-    elif m == 2:
-        X[:,1] = x
-        X[:,2] = y
-        X[:,3] = x*x
-        X[:,4] = x*y
-        X[:,5] = y*y
-    elif m == 3:
-        X[:,1] = x
-        X[:,2] = y
-        X[:,3] = x*x
-        X[:,4] = x*y
-        X[:,5] = y*y
-        X[:,6] = X[:,3]*x        # x^3
-        X[:,7] = X[:,3]*y        # x^2 y
-        X[:,8] = x*X[:,5]        # x y^2
-        X[:,9] = y*X[:,5]        # y^3
-        X[:,6] = X[:,3]*x
-    elif m == 4:
-        X[:,1]  = x
-        X[:,2]  = y
-        X[:,3]  = x*x
-        X[:,4]  = x*y
-        X[:,5]  = y*y
-        X[:,6]  = X[:,3]*x       # x^3
-        X[:,7]  = X[:,3]*y       # x^2 y
-        X[:,8]  = x*X[:,5]       # x y^2
-        X[:,9]  = y*X[:,5]       # y^3
-        X[:,10] = X[:,3]*X[:,3]  # x^4
-        X[:,11] = X[:,6]*y       # x^3 y
-        X[:,12] = X[:,3]*X[:,5]  # x^2 y^2
-        X[:,13] = x*X[:,9]       # x y^3
-        X[:,14] = X[:,5]*X[:,5]  # y^4
-    elif m == 5:
-        X[:,1]  = x
-        X[:,2]  = y
-        X[:,3]  = x*x
-        X[:,4]  = x*y
-        X[:,5]  = y*y
-        X[:,6]  = X[:,3]*x       # x^3
-        X[:,7]  = X[:,3]*y       # x^2 y
-        X[:,8]  = x*X[:,5]       # x y^2
-        X[:,9]  = y*X[:,5]       # y^3
-        X[:,10] = X[:,3]*X[:,3]  # x^4
-        X[:,11] = X[:,6]*y       # x^3 y
-        X[:,12] = X[:,3]*X[:,5]  # x^2 y^2
-        X[:,13] = x*X[:,9]       # x y^3
-        X[:,14] = X[:,5]*X[:,5]  # y^4
-        X[:,15] = X[:,3]*X[:,6]  # x^5
-        X[:,16] = X[:,10]*y      # x^4 y
-        X[:,17] = X[:,6]*X[:,5]  # x^3 y^2
-        X[:,18] = X[:,3]*X[:,9]  # x^2 y^3
-        X[:,19] = x*X[:,14]      # x y^4
-        X[:,20] = X[:,5]*X[:,9]  # y^5
-    else:
-        raise ValueError('Invalid polynomial order: {0}'.format(m))
-    return X
+    V[:,0] = np.ones(x.size)
+    i = 1
+    for o in range(1,order+1):
+        V[:,i:i+o] = x[:,np.newaxis] * V[:,i-o:i]
+        V[:,i+o] = y * V[:,i-1]
+        i += o + 1
+    return V
 
 
 def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
@@ -180,7 +129,7 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     Returns
     -------
     c : ndarray
-        The polynomial coefficients in increasing powers.
+        The polynomial coefficients in ascending powers.
 
     Warns
     -----
@@ -218,7 +167,7 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
         y /= scale
 
     ## Solve the least square equations.
-    v = _kernel_mat(x, y, order)
+    v = vandermonde(x, y, order)
     c, resids, rank, s = lstsq(v, z)
 
     ## Warn on rank deficit, which indicates an ill-conditioned matrix.
@@ -228,7 +177,7 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
 
     ## Scale the returned coefficients.
     if scale != 0:
-        S = _kernel_mat([scale], [scale], order)[0]
+        S = vandermonde([scale], [scale], order)[0]
         c /= S
 
     if full_output:
@@ -267,7 +216,7 @@ def polyfit2d_spatial(x, y, xt, yt, order=1, rcond=None, full_output=False):
     Returns
     -------
     cx, cy : ndarray
-        The polynomial coefficients in increasing powers.
+        The polynomial coefficients in ascending powers.
 
     Warns
     -----
@@ -308,7 +257,7 @@ def polyfit2d_spatial(x, y, xt, yt, order=1, rcond=None, full_output=False):
         y /= scale
 
     ## Solve the least square equations.
-    v = _kernel_mat(x, y, order)
+    v = vandermonde(x, y, order)
     cx, resids_x, rank, s_x = lstsq(v, xt)
     cy, resids_y, rank, s_y = lstsq(v, yt)
 
@@ -319,7 +268,7 @@ def polyfit2d_spatial(x, y, xt, yt, order=1, rcond=None, full_output=False):
 
     ## Scale the returned coefficients.
     if scale != 0:
-        S = _kernel_mat([scale], [scale], order)[0]
+        S = vandermonde([scale], [scale], order)[0]
         cx /= S
         cy /= S
 
@@ -330,9 +279,6 @@ def polyfit2d_spatial(x, y, xt, yt, order=1, rcond=None, full_output=False):
 
 
 class _poly2d(object):
-    _max_order = len(_polyfunc)
-    _valid_num_coeffs = tuple(num_coeffs(m) for m in range(1, _max_order+1))
-
     @property
     def order(self):
         """The order of the polynomial."""
@@ -340,19 +286,19 @@ class _poly2d(object):
 
 
 class poly2d(_poly2d):
-    """A 2-dimensional polynomial transform class.
+    """A 2-dimensional polynomial class.
 
     z = c[0] + c[1]*x + c[2]*y + ... + c[n-1]*x*y**(n-1) + c[n]*y**n
 
     Parameters
     ----------
     c : array_like
-        The polynomial coefficients in *increasing* powers.
+        The polynomial coefficients in *ascending* powers.
 
     Attributes
     ----------
     c : array_like
-        The polynomial coefficients in *increasing* powers.
+        The polynomial coefficients in *ascending* powers.
     order : int
         The order of the polynomial.
     """
@@ -362,7 +308,7 @@ class poly2d(_poly2d):
         ----------
         c : array_like
             The polynomial coefficients for the x'-coordinate 'in
-            *increasing* powers.
+            *ascending* powers.
 
         Raises
         ------
@@ -372,10 +318,6 @@ class poly2d(_poly2d):
         ## Check the inputs.
         if c.ndim != 1:
             raise ValueError("`c` must be 1-dim.")
-        if len(c) not in self._valid_num_coeffs:
-            msg = ('Invalid number of the coefficients: {0}\n'
-                   'Must be one of {1}'.format(len(c), str(self._valid_num_coeffs)))
-            raise ValueError(msg)
 
         self._c = c
         self._order = order(len(self._c))
@@ -413,7 +355,11 @@ class poly2d(_poly2d):
         if y.ndim != 1:
             raise ValueError("`y` must be 1-dim.")
 
-        return _polyfunc[self._order](x, y, self._c)
+        try:
+            return _polyfunc[self._order](x, y, self._c)
+        except KeyError:
+            V = vandermonde(x, y, self._order)
+            return V * self._c
 
     @property
     def c(self):
@@ -431,19 +377,19 @@ class poly2d_spatial(_poly2d):
     ----------
     cx : array_like
         The polynomial coefficients for the x'-coordinate 'in
-        *increasing* powers.
+        *ascending* powers.
     cy : array_like
         The polynomial coefficients for the y'-coordinate 'in
-        *increasing* powers.
+        *ascending* powers.
 
     Attributes
     ----------
     cx : array_like
         The polynomial coefficients for the x'-coordinate 'in
-        *increasing* powers.
+        *ascending* powers.
     cy : array_like
         The polynomial coefficients for the y'-coordinate 'in
-        *increasing* powers.
+        *ascending* powers.
     order : int
         The order of the polynomial.
     """
@@ -453,10 +399,10 @@ class poly2d_spatial(_poly2d):
         ----------
         cx : array_like
             The polynomial coefficients for the x'-coordinate 'in
-            *increasing* powers.
+            *ascending* powers.
         cy : array_like
             The polynomial coefficients for the y'-coordinate 'in
-            *increasing* powers.
+            *ascending* powers.
 
         Raises
         ------
@@ -473,10 +419,6 @@ class poly2d_spatial(_poly2d):
             raise ValueError("`cx` must be 1-dim.")
         if cy.ndim != 1:
             raise ValueError("`cy` must be 1-dim.")
-        if len(cx) not in self._valid_num_coeffs:
-            msg = ('Invalid number of the coefficients: {0}\n'
-                   'Must be one of {1}'.format(len(cx), str(self._valid_num_coeffs)))
-            raise ValueError(msg)
 
         self._cx = cx
         self._cy = cy
@@ -516,9 +458,13 @@ class poly2d_spatial(_poly2d):
         if y.ndim != 1:
             raise ValueError("`y` must be 1-dim.")
 
-        xt = _polyfunc[self._order](x, y, self._cx)
-        yt = _polyfunc[self._order](x, y, self._cy)
-
+        try:
+            xt = _polyfunc[self._order](x, y, self._cx)
+            yt = _polyfunc[self._order](x, y, self._cy)
+        except KeyError:
+            V = vandermonde(x, y, self._order)
+            xt =  V * self._cx
+            yt =  V * self._cy
         return xt, yt
 
     @property
