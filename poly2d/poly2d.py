@@ -341,7 +341,7 @@ class poly2d(object):
             return _polyfunc[self._order](x, y, self._c)
         except KeyError:
             V = vandermonde(x, y, self._order)
-            return V * self._c
+            return np.dot(V, self._c)
 
     def __array__(self):
         """Return a copy of `_c`."""
@@ -456,8 +456,8 @@ class poly2d_transform(object):
             yt = _polyfunc[self._order](x, y, self._cy)
         except KeyError:
             V = vandermonde(x, y, self._order)
-            xt =  V * self._cx
-            yt =  V * self._cy
+            xt =  np.dot(V, self._cx)
+            yt =  np.dot(V, self._cy)
         return xt, yt
 
     @property
