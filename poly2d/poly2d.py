@@ -343,6 +343,17 @@ class poly2d(object):
             V = vandermonde(x, y, self._order)
             return V * self._c
 
+    def __array__(self):
+        """Return a copy of `_c`."""
+        return np.array(self._c)
+
+    def __repr__(self):
+        vals = repr(self._c)
+        return "poly2d({0})".format(vals[6:-1])
+
+    def __len__(self):
+        return self._order
+
     @property
     def coeffs(self):
         """The polynomial coefficients."""
