@@ -12,5 +12,6 @@
 
 *.DS_Store
 
+MANIFEST
 build/
 *.egg-info/
