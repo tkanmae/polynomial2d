@@ -12,6 +12,9 @@ import _poly2d
 __all__ = ['poly2d', 'polyfit2d', 'poly2d_transform', 'polyfit2d_transform']
 
 
+## Use the polynomial functions in the C-extension module `_poly2d` if
+## a polynomial order is not greater than 5.  These functions are mush
+## faster than calculation using a Vandermonde matrix.
 _polyfunc = {
     1: _poly2d.poly1,
     2: _poly2d.poly2,

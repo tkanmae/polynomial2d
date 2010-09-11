@@ -4,8 +4,8 @@
 Notes
 -----
 This extensioin module does not handle errors caused by inconsistent
-input parameters.  Validation of input parameters must be done in a
-corresponding module.
+input parameters.  Validation of input parameters must be done in
+modules which call this extension module.
 """
 # cython: cdivision=True
 from __future__ import division
