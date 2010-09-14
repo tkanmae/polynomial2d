@@ -105,8 +105,8 @@ def vandermonde(x, y, order):
     """
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
-    if x.ndim != 1: raise ValueError("`x` must be 1-dim")
-    if y.ndim != 1: raise ValueError("`y` must be 1-dim")
+    if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
+    if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
 
     n = (order+1)*(order+2) // 2
     V = np.zeros((x.size, n), x.dtype)
@@ -147,7 +147,7 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     Returns
     -------
     c : ndarray
-        The polynomial coefficients in ascending powers.
+        The polynomial coefficients in *ascending* powers.
     residuals, rank, singular_values, rcond : present only if `full_output` = True
         Residuals of the least-squares fit, the effective rank of the scaled
         Vandermonde coefficient matrix, its singular values, and the specified
@@ -233,7 +233,7 @@ def polyfit2d_transform(x1, y1, x2, y2, order=1, rcond=None, full_output=False):
     Returns
     -------
     cx, cy : ndarray
-        The polynomial coefficients in ascending powers.
+        The polynomial coefficients in *ascending* powers.
     rsqx, rsqy, rank, sx, sy, rcond : present only if `full_output` = True
         Residuals of the least-squares fit, the effective rank of the scaled
         Vandermonde coefficient matrix, its singular values, and the specified

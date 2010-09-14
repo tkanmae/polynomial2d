@@ -16,17 +16,15 @@ from numpy cimport *
 ## Initialize numpy.
 import_array()
 
-ctypedef float64_t DTYPE_t
-
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly1(ndarray[DTYPE_t, ndim=1] x,
-          ndarray[DTYPE_t, ndim=1] y,
-          ndarray[DTYPE_t, ndim=1] c):
+def poly1(ndarray[float64_t,ndim=1] x,
+          ndarray[float64_t,ndim=1] y,
+          ndarray[float64_t,ndim=1] c):
     cdef:
         Py_ssize_t n = x.shape[0]
-        ndarray[DTYPE_t, ndim=1] z = \
+        ndarray[float64_t,ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
         Py_ssize_t i
 
@@ -37,12 +35,12 @@ def poly1(ndarray[DTYPE_t, ndim=1] x,
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly2(ndarray[DTYPE_t, ndim=1] x,
-          ndarray[DTYPE_t, ndim=1] y,
-          ndarray[DTYPE_t, ndim=1] c):
+def poly2(ndarray[float64_t,ndim=1] x,
+          ndarray[float64_t,ndim=1] y,
+          ndarray[float64_t,ndim=1] c):
     cdef:
         Py_ssize_t n = x.shape[0]
-        ndarray[DTYPE_t, ndim=1] z = \
+        ndarray[float64_t,ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
         Py_ssize_t i
         double x1, y1
@@ -56,12 +54,12 @@ def poly2(ndarray[DTYPE_t, ndim=1] x,
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly3(ndarray[DTYPE_t, ndim=1] x,
-          ndarray[DTYPE_t, ndim=1] y,
-          ndarray[DTYPE_t, ndim=1] c):
+def poly3(ndarray[float64_t,ndim=1] x,
+          ndarray[float64_t,ndim=1] y,
+          ndarray[float64_t,ndim=1] c):
     cdef:
         Py_ssize_t n = x.shape[0]
-        ndarray[DTYPE_t, ndim=1] z = \
+        ndarray[float64_t,ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
         Py_ssize_t i
         double x1, x2, x3
@@ -79,12 +77,12 @@ def poly3(ndarray[DTYPE_t, ndim=1] x,
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly4(ndarray[DTYPE_t, ndim=1] x,
-          ndarray[DTYPE_t, ndim=1] y,
-          ndarray[DTYPE_t, ndim=1] c):
+def poly4(ndarray[float64_t,ndim=1] x,
+          ndarray[float64_t,ndim=1] y,
+          ndarray[float64_t,ndim=1] c):
     cdef:
         Py_ssize_t n = x.shape[0]
-        ndarray[DTYPE_t, ndim=1] z = \
+        ndarray[float64_t,ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
         Py_ssize_t i
         double x1, x2, x3, x4
@@ -103,12 +101,12 @@ def poly4(ndarray[DTYPE_t, ndim=1] x,
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def poly5(ndarray[DTYPE_t, ndim=1] x,
-          ndarray[DTYPE_t, ndim=1] y,
-          ndarray[DTYPE_t, ndim=1] c):
+def poly5(ndarray[float64_t,ndim=1] x,
+          ndarray[float64_t,ndim=1] y,
+          ndarray[float64_t,ndim=1] c):
     cdef:
         Py_ssize_t n = x.shape[0]
-        ndarray[DTYPE_t, ndim=1] z = \
+        ndarray[float64_t,ndim=1] z = \
                 PyArray_ZEROS(1, <npy_intp*>&n, NPY_DOUBLE, 0)
         Py_ssize_t i
         double x1, x2, x3, x4, x5
