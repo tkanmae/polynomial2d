@@ -9,7 +9,7 @@ from numpy.linalg import lstsq
 import _poly2d
 
 
-__all__ = ['poly2d', 'polyfit2d', 'poly2d_transform', 'polyfit2d_transform']
+__all__ = ['poly2d', 'polyfit2d', 'poly2d_transform', 'polyfit2d_transform',]
 
 
 ## Use the polynomial functions in the C-extension module `_poly2d` if
@@ -29,7 +29,7 @@ class RankWarning(UserWarning):
     pass
 
 
-def num_coeffs(order):
+def ncoeffs(order):
     """Return the number of the coefficients for a given polynomial
     order.
 
@@ -42,25 +42,42 @@ def num_coeffs(order):
     -------
     num : int
         The number of the coefficients.
+
+    Raises
+    ------
+    ValueError
+        If `order` is less than 1.
     """
+    if not isinstance(order, int): raise TypeError("`order` must be a int")
+    if order < 1:
+        raise ValueError("`order` must be greater than 0: {0}".format(order))
     return (order+1)*(order+2) // 2
 
 
-def order(num_coeffs):
+def order(ncoeffs):
     """Return the polynomial order for a given number of the
     coefficients.
 
     Parameters
     ----------
-    num_coeffs : int
+    ncoeffs : int
         The number of the coeefficients.
 
     Returns
     -------
     order : int
         The polynomial order.
+
+    Raises
+    ------
+    ValueError
+        If `ncoeffs` is not consistent with any of 2-dim polynomial orders.
     """
-    return int((sqrt(8*num_coeffs+1) - 3) // 2)
+    order = (sqrt(8*ncoeffs+1) - 3) / 2
+    if order % 1 > 1e-8 or order < 1:
+        raise ValueError("`ncoeff` is not consistent with any of 2-dim"
+                         "polynomial orders: {0}".format(ncoeffs))
+    return int(order)
 
 
 def vandermonde(x, y, order):
@@ -171,7 +188,7 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     c, rsq, rank, s = lstsq(v, z)
 
     ## Warn on rank deficit, which indicates an ill-conditioned matrix.
-    if rank != num_coeffs(order) and not full_output:
+    if rank != ncoeffs(order) and not full_output:
         msg = "`polyfit2d` may be poorly conditioned"
         warnings.warn(msg, RankWarning)
     ## Scale the returned coefficients.
@@ -260,7 +277,7 @@ def polyfit2d_transform(x1, y1, x2, y2, order=1, rcond=None, full_output=False):
     cy, rsqy, rank, sy = lstsq(V, y2)
 
     ## Warn on rank deficit, which indicates an ill-conditioned matrix.
-    if rank != num_coeffs(order) and not full_output:
+    if rank != ncoeffs(order) and not full_output:
         msg = "`polyfit2d` may be poorly conditioned"
         warnings.warn(msg, RankWarning)
     ## Scale the returned coefficients.
@@ -287,12 +304,12 @@ class poly2d(object):
 
     Attributes
     ----------
-    c : array_like, shape (n,)
+    coeffs : array_like, shape (n,)
         The polynomial coefficients in *ascending* powers.
     order : int
         The order of the polynomial.
     """
-    def __init__(self, c):
+    def __init__(self, coeffs):
         """
         Parameters
         ----------
@@ -302,13 +319,13 @@ class poly2d(object):
         Raises
         ------
         ValueError
-            If `c` is not 1-dim.
+            If `coeffs` is not 1-dim.
         """
-        c = np.atleast_1d(c) + 0.0
+        coeffs = np.atleast_1d(coeffs) + 0.0
         ## Check the inputs.
-        if c.ndim != 1: raise ValueError("`c` must be 1-dim.")
+        if coeffs.ndim != 1: raise ValueError("`coeffs` must be 1-dim.")
 
-        self._c = c
+        self._c = coeffs
         self._order = order(len(self._c))
 
     def __call__(self, x, y):
