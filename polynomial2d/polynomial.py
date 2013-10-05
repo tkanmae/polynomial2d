@@ -12,9 +12,9 @@ import _poly2d
 __all__ = ['poly2d', 'polyfit2d', 'poly2d_transform', 'polyfit2d_transform',]
 
 
-## Use the polynomial functions in the C-extension module `_poly2d` if
-## a polynomial order is not greater than 5.  These functions are mush
-## faster than calculation using a Vandermonde matrix.
+# Use the polynomial functions in the C-extension module `_poly2d` if
+# a polynomial order is not greater than 5.  These functions are mush
+# faster than calculation using a Vandermonde matrix.
 _polyfunc = {
     1: _poly2d.poly1,
     2: _poly2d.poly2,
@@ -168,30 +168,30 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     y = np.asarray(y, np.float64)
     z = np.asarray(z, np.float64)
 
-    ## Check inputs.
+    # Check inputs.
     if x.size != y.size or x.size != z.size:
         raise ValueError("`x`, `y`, and `z` must have the same size.")
     if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
     if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
     if z.ndim != 1: raise ValueError("`z` must be 1-dim.")
-    ## Set `rcond`
+    # Set `rcond`
     if rcond is None:
         rcond = x.size * np.finfo(x.dtype).eps
-    ## Scale `x` and `y`.
+    # Scale `x` and `y`.
     scale = max(abs(x.max()), abs(y.max()))
     if scale != 0:
         x /= scale
         y /= scale
 
-    ## Solve the least square equations.
+    # Solve the least square equations.
     v = vandermonde(x, y, order)
     c, rsq, rank, s = lstsq(v, z)
 
-    ## Warn on rank deficit, which indicates an ill-conditioned matrix.
+    # Warn on rank deficit, which indicates an ill-conditioned matrix.
     if rank != ncoeffs(order) and not full_output:
         msg = "`polyfit2d` may be poorly conditioned"
         warnings.warn(msg, RankWarning)
-    ## Scale the returned coefficients.
+    # Scale the returned coefficients.
     if scale != 0:
         S = vandermonde([scale], [scale], order)[0]
         c /= S
@@ -255,32 +255,32 @@ def polyfit2d_transform(x1, y1, x2, y2, order=1, rcond=None, full_output=False):
     x2 = np.asarray(x2, np.float64)
     y2 = np.asarray(y2, np.float64)
 
-    ## Check inputs.
+    # Check inputs.
     if x1.size != y1.size or x1.size != x2.size or x1.size != y2.size:
         raise ValueError("`x`, `y`, `x2`, and `y2` must have the same size.")
     if x1.ndim != 1: raise ValueError("`x1` must be 1-dim.")
     if y1.ndim != 1: raise ValueError("`y1` must be 1-dim.")
     if x2.ndim != 1: raise ValueError("`x2` must be 1-dim.")
     if y2.ndim != 1: raise ValueError("`y2` must be 1-dim.")
-    ## Set `rcond`
+    # Set `rcond`
     if rcond is None:
         rcond = x1.size * np.finfo(x1.dtype).eps
-    ## Scale `x` and `y`.
+    # Scale `x` and `y`.
     scale = max(abs(x1.max()), abs(y1.max()))
     if scale != 0:
         x1 /= scale
         y1 /= scale
 
-    ## Solve the least square equations.
+    # Solve the least square equations.
     V = vandermonde(x1, y1, order)
     cx, rsqx, rank, sx = lstsq(V, x2)
     cy, rsqy, rank, sy = lstsq(V, y2)
 
-    ## Warn on rank deficit, which indicates an ill-conditioned matrix.
+    # Warn on rank deficit, which indicates an ill-conditioned matrix.
     if rank != ncoeffs(order) and not full_output:
         msg = "`polyfit2d` may be poorly conditioned"
         warnings.warn(msg, RankWarning)
-    ## Scale the returned coefficients.
+    # Scale the returned coefficients.
     if scale != 0:
         S = vandermonde([scale], [scale], order)[0]
         cx /= S
@@ -322,7 +322,7 @@ class poly2d(object):
             If `coeffs` is not 1-dim.
         """
         coeffs = np.atleast_1d(coeffs) + 0.0
-        ## Check the inputs.
+        # Check the inputs.
         if coeffs.ndim != 1: raise ValueError("`coeffs` must be 1-dim.")
 
         self._c = coeffs
@@ -351,7 +351,7 @@ class poly2d(object):
         """
         x = np.atleast_1d(x) + 0.0
         y = np.atleast_1d(y) + 0.0
-        ## Chek inputs.
+        # Chek inputs.
         if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
         if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
         if x.size != y.size:

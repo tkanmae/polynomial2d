@@ -13,7 +13,7 @@ cimport cython
 from numpy cimport *
 
 
-## Initialize numpy.
+# Initialize numpy.
 import_array()
 
 

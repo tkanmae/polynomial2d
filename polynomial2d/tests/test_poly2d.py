@@ -15,7 +15,7 @@ from polynomial2d.polynomial import (poly2d, polyfit2d, poly2d_transform, polyfi
 def _realistic_coeffs(order):
     """Return realistic polynomial coefficients."""
     from random import random
-    ## Pairs of the magnitude and the number of coefficients.
+    # Pairs of the magnitude and the number of coefficients.
     mags = ((100*random(), 1), (100, 2), (10, 3), (1, 4), (0.1, 5), (0.01, 6))
     if order < 1:
         raise ValueError('`order` must be larger than 1.')
@@ -35,7 +35,7 @@ class TestHelperFuncs(unittest.TestCase):
         self.assertEqual(15, ncoeffs(4))
         self.assertEqual(21, ncoeffs(5))
 
-        ## `order` must be a positive integer.
+        # `order` must be a positive integer.
         self.assertRaises(TypeError, ncoeffs, 1.0)
         self.assertRaises(ValueError, ncoeffs, 0)
         self.assertRaises(ValueError, ncoeffs, -1)
@@ -47,7 +47,7 @@ class TestHelperFuncs(unittest.TestCase):
         self.assertEqual(4, order(15))
         self.assertEqual(5, order(21))
 
-        ## `ncoeffs` must be one of 3, 6, 10, ...
+        # `ncoeffs` must be one of 3, 6, 10, ...
         self.assertRaises(ValueError, order, 1)
         self.assertRaises(ValueError, order, 4)
 
@@ -76,10 +76,10 @@ class TestPoly2d(unittest.TestCase):
         self.assertTrue(isinstance(poly2d([1, 2, 3]), poly2d))
         self.assertTrue(isinstance(poly2d([1, 2, 3, 4, 5, 6]), poly2d))
 
-        ## `coeffs` must be a 1-dim array.
+        # `coeffs` must be a 1-dim array.
         coeffs = [[1, 2, 3], [4, 5, 6]]
         self.assertRaises(ValueError, poly2d, coeffs)
-        ## `coeffs` must be consistent size.
+        # `coeffs` must be consistent size.
         coeffs = [[1, 2, 3, 4], [5, 6, 7, 9]]
         self.assertRaises(ValueError, poly2d, coeffs)
 
@@ -89,9 +89,9 @@ class TestPoly2d(unittest.TestCase):
         self.assertTrue(hasattr(p, 'coeffs'))
         self.assertTrue(hasattr(p, 'order'))
 
-        ## __len__() returns the polynomial order.
+        # __len__() returns the polynomial order.
         self.assertEqual(1, len(p))
-        ## __array__() returns a copy of `coeffs`.
+        # __array__() returns a copy of `coeffs`.
         c = np.array(p)
         assert_equal(p, p.coeffs)
         self.assertNotEqual(id(c), id(p.coeffs))
@@ -102,11 +102,11 @@ class TestPoly2d(unittest.TestCase):
         assert_equal(p(0, 0), 1)
         assert_equal(p(1, 2), 9)
 
-        ## x and y must be a 1-dim array.
+        # x and y must be a 1-dim array.
         x = np.random.random(10).reshape(2,5)
         y = np.random.random(10).reshape(2,5)
         self.assertRaises(ValueError, p, x, y)
-        ## x and y must have the same size.
+        # x and y must have the same size.
         x = np.random.random(10)
         y = np.random.random(11)
         self.assertRaises(ValueError, p, x, y)
@@ -117,13 +117,13 @@ class TestPoly2dTransform(unittest.TestCase):
     def test_ctor(self):
         self.assertTrue(
             isinstance(poly2d_transform([1, 2, 3], [1, 2, 3]), poly2d_transform))
-        ## `coeffs` must be a 1-dim array.
+        # `coeffs` must be a 1-dim array.
         c = [[1, 2, 3], [4, 5, 6]]
         self.assertRaises(ValueError, poly2d_transform, c, c)
-        ## `coeffs` must be consistent size.
+        # `coeffs` must be consistent size.
         c = [[1, 2, 3, 4], [5, 6, 7, 9]]
         self.assertRaises(ValueError, poly2d_transform, c, c)
-        ## cx and cy must have the same size.
+        # cx and cy must have the same size.
         self.assertRaises(ValueError, poly2d_transform, [1, 2, 3], [1, 2, 3, 4])
 
     def test_attr(self):
@@ -139,11 +139,11 @@ class TestPoly2dTransform(unittest.TestCase):
         assert_equal(p(0, 0), (1, 1))
         assert_equal(p(1, 2), (9, 9))
 
-        ## x and y must be a 1-dim array.
+        # x and y must be a 1-dim array.
         x = np.random.random(10).reshape(2,5)
         y = np.random.random(10).reshape(2,5)
         self.assertRaises(ValueError, p, x, y)
-        ## x and y must have the same size.
+        # x and y must have the same size.
         x = np.random.random(10)
         y = np.random.random(11)
         self.assertRaises(ValueError, p, x, y)
@@ -208,11 +208,11 @@ class TestPolyfit2d(unittest.TestCase):
         rv = polyfit2d(x, y, z, order=3)
         self.assertEqual(10, len(rv))
 
-        ## The input must be 1-dim arrays.
+        # The input must be 1-dim arrays.
         self.assertRaises(ValueError, polyfit2d, x.reshape(2,5), y, z)
         self.assertRaises(ValueError, polyfit2d, x, y.reshape(2,5), z)
         self.assertRaises(ValueError, polyfit2d, x, y, z.reshape(2,5))
-        ## The input must have the same size.
+        # The input must have the same size.
         e = np.random.random(11)
         self.assertRaises(ValueError, polyfit2d, x, y, e)
         self.assertRaises(ValueError, polyfit2d, x, e, z)
@@ -296,12 +296,12 @@ class TestPolyfit2dTransform(unittest.TestCase):
         rv = polyfit2d_transform(x1, y1, x2, y2, full_output=True)
         self.assertEqual(8, len(rv))
 
-        ## The input must be 1-dim arrays.
+        # The input must be 1-dim arrays.
         self.assertRaises(ValueError, polyfit2d_transform, x1.reshape(2,5), y1, x2, y2)
         self.assertRaises(ValueError, polyfit2d_transform, x1, y1.reshape(2,5), x2, y2)
         self.assertRaises(ValueError, polyfit2d_transform, x1, y1, x2.reshape(2,5), y2)
         self.assertRaises(ValueError, polyfit2d_transform, x1, y1, x2, y2.reshape(2,5))
-        ## The input must have the same size.
+        # The input must have the same size.
         e = np.random.random(11)
         assert_raises(ValueError, polyfit2d_transform, e, y1, x2, y2)
         assert_raises(ValueError, polyfit2d_transform, x1, e, x2, y2)
