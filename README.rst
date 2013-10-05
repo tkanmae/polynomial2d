@@ -11,7 +11,7 @@ Installation
 Building polynomial2d requires the following software installed:
 
 * Python (>=2.6)
-* NumPy (>=1.3)
+* NumPy (>=1.7.1)
 * [optional] nose (>=0.11)
 
 nose is required to execute tests.
