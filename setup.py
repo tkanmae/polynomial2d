@@ -4,13 +4,13 @@ import os
 
 pjoin = os.path.join
 
-root_dir = 'poly2d'
+root_dir = 'polynomial2d'
 
 
 def configuration(parent_package='', top_path=None):
     from numpy.distutils.misc_util import Configuration
 
-    config = Configuration('poly2d',
+    config = Configuration('polynomial2d',
                            parent_package,
                            top_path,
                            package_path=root_dir)

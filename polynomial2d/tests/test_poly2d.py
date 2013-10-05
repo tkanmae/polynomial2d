@@ -8,8 +8,8 @@ except:
     import unittest
 from numpy.testing import *
 
-from poly2d.polynomial import (ncoeffs, order, vandermonde, )
-from poly2d.polynomial import (poly2d, polyfit2d, poly2d_transform, polyfit2d_transform,)
+from polynomial2d.polynomial import (ncoeffs, order, vandermonde, )
+from polynomial2d.polynomial import (poly2d, polyfit2d, poly2d_transform, polyfit2d_transform,)
 
 
 def _realistic_coeffs(order):
