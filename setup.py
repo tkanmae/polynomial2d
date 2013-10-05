@@ -1,38 +1,31 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os
-
-pjoin = os.path.join
-
-root_dir = 'polynomial2d'
+import numpy as np
+from setuptools import setup, Extension
 
 
-def configuration(parent_package='', top_path=None):
-    from numpy.distutils.misc_util import Configuration
-
-    config = Configuration('polynomial2d',
-                           parent_package,
-                           top_path,
-                           package_path=root_dir)
-
-    ## Add `_poly2d` extension module.
-    src_files = ['_poly2d.c']
-    src_files = [pjoin(root_dir, f) for f in src_files]
-    config.add_extension('_poly2d', sources=src_files)
-
-    ## Add `tests` directory.
-    config.add_data_dir(('tests', pjoin(root_dir, 'tests')))
-
-    return config
-
-
-if __name__ == '__main__':
-    from numpy.distutils.core import setup
-
-    setup(
-          version       = '0.1.0',
-          author        = 'Takeshi Kaname',
-          author_email  = 'tkanmae@gmail.com',
-          keywords      = ['numpy', 'data', 'science'],
-          configuration = configuration,
-        )
+setup(
+    name='Polynomial2d',
+    version='0.2.0',
+    license='MIT',
+    author='Takeshi Kanmae',
+    author_email='tkanmae@gmail.com',
+    classifiers=[
+        'Intentended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering',
+        'Programing Language :: Python',
+        'Licence :: OSI Approved :: MIT License',
+    ],
+    packages=[
+        'polynomial2d',
+        'polynomial2d.tests',
+    ],
+    ext_modules=[
+        Extension(
+            'polynomial2d._poly2d',
+            sources=['polynomial2d/_poly2d.c'],
+            include_dirs=[np.get_include()],
+        ),
+    ],
+    install_requires=open('requirements.txt').read().splitlines(),
+)

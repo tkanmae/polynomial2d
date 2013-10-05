@@ -2,7 +2,6 @@ recursive-include polynomial2d *.pyx
 
 recursive-include examples *.py
 
-include setupegg.py
 include MANIFEST.in
 include LICENSE.txt
 include README
