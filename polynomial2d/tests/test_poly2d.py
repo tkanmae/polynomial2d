@@ -9,7 +9,8 @@ except:
 from numpy.testing import *
 
 from polynomial2d.polynomial import (ncoeffs, order, vandermonde, )
-from polynomial2d.polynomial import (poly2d, polyfit2d, poly2d_transform, polyfit2d_transform,)
+from polynomial2d.polynomial import (poly2d, polyfit2d,
+                                     poly2d_transform, polyfit2d_transform,)
 
 
 def _realistic_coeffs(order):
@@ -22,7 +23,8 @@ def _realistic_coeffs(order):
     ret = []
     for i, (mag, n) in enumerate(mags):
         ret.append([mag*random() for j in range(n)])
-        if i == order: break
+        if i == order:
+            break
     return np.hstack(ret)
 
 

@@ -9,7 +9,7 @@ from numpy.linalg import lstsq
 import _poly2d
 
 
-__all__ = ['poly2d', 'polyfit2d', 'poly2d_transform', 'polyfit2d_transform',]
+__all__ = ['poly2d', 'polyfit2d', 'poly2d_transform', 'polyfit2d_transform']
 
 
 # Use the polynomial functions in the C-extension module `_poly2d` if
@@ -48,7 +48,8 @@ def ncoeffs(order):
     ValueError
         If `order` is less than 1.
     """
-    if not isinstance(order, int): raise TypeError("`order` must be a int")
+    if not isinstance(order, int):
+        raise TypeError("`order` must be a int")
     if order < 1:
         raise ValueError("`order` must be greater than 0: {0}".format(order))
     return (order+1)*(order+2) // 2
@@ -105,17 +106,19 @@ def vandermonde(x, y, order):
     """
     x = np.atleast_1d(x)
     y = np.atleast_1d(y)
-    if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
-    if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
+    if x.ndim != 1:
+        raise ValueError("`x` must be 1-dim.")
+    if y.ndim != 1:
+        raise ValueError("`y` must be 1-dim.")
 
     n = (order+1)*(order+2) // 2
     V = np.zeros((x.size, n), x.dtype)
 
-    V[:,0] = np.ones(x.size)
+    V[:, 0] = np.ones(x.size)
     i = 1
-    for o in range(1,order+1):
-        V[:,i:i+o] = x[:,np.newaxis] * V[:,i-o:i]
-        V[:,i+o] = y * V[:,i-1]
+    for o in range(1, order+1):
+        V[:, i:i+o] = x[:, np.newaxis] * V[:, i-o:i]
+        V[:, i+o] = y * V[:, i-1]
         i += o + 1
     return V
 
@@ -148,7 +151,7 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     -------
     c : ndarray
         The polynomial coefficients in *ascending* powers.
-    residuals, rank, singular_values, rcond : present only if `full_output` = True
+    residuals, rank, singular_values, rcond : if `full_output` = True
         Residuals of the least-squares fit, the effective rank of the scaled
         Vandermonde coefficient matrix, its singular values, and the specified
         value of `rcond`. For more details, see `numpy.linalg.lstsq`.
@@ -171,9 +174,12 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     # Check inputs.
     if x.size != y.size or x.size != z.size:
         raise ValueError("`x`, `y`, and `z` must have the same size.")
-    if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
-    if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
-    if z.ndim != 1: raise ValueError("`z` must be 1-dim.")
+    if x.ndim != 1:
+        raise ValueError("`x` must be 1-dim.")
+    if y.ndim != 1:
+        raise ValueError("`y` must be 1-dim.")
+    if z.ndim != 1:
+        raise ValueError("`z` must be 1-dim.")
     # Set `rcond`
     if rcond is None:
         rcond = x.size * np.finfo(x.dtype).eps
@@ -258,10 +264,14 @@ def polyfit2d_transform(x1, y1, x2, y2, order=1, rcond=None, full_output=False):
     # Check inputs.
     if x1.size != y1.size or x1.size != x2.size or x1.size != y2.size:
         raise ValueError("`x`, `y`, `x2`, and `y2` must have the same size.")
-    if x1.ndim != 1: raise ValueError("`x1` must be 1-dim.")
-    if y1.ndim != 1: raise ValueError("`y1` must be 1-dim.")
-    if x2.ndim != 1: raise ValueError("`x2` must be 1-dim.")
-    if y2.ndim != 1: raise ValueError("`y2` must be 1-dim.")
+    if x1.ndim != 1:
+        raise ValueError("`x1` must be 1-dim.")
+    if y1.ndim != 1:
+        raise ValueError("`y1` must be 1-dim.")
+    if x2.ndim != 1:
+        raise ValueError("`x2` must be 1-dim.")
+    if y2.ndim != 1:
+        raise ValueError("`y2` must be 1-dim.")
     # Set `rcond`
     if rcond is None:
         rcond = x1.size * np.finfo(x1.dtype).eps
@@ -323,7 +333,8 @@ class poly2d(object):
         """
         coeffs = np.atleast_1d(coeffs) + 0.0
         # Check the inputs.
-        if coeffs.ndim != 1: raise ValueError("`coeffs` must be 1-dim.")
+        if coeffs.ndim != 1:
+            raise ValueError("`coeffs` must be 1-dim.")
 
         self._c = coeffs
         self._order = order(len(self._c))
@@ -352,8 +363,10 @@ class poly2d(object):
         x = np.atleast_1d(x) + 0.0
         y = np.atleast_1d(y) + 0.0
         # Chek inputs.
-        if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
-        if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
+        if x.ndim != 1:
+            raise ValueError("`x` must be 1-dim.")
+        if y.ndim != 1:
+            raise ValueError("`y` must be 1-dim.")
         if x.size != y.size:
             raise ValueError('`x` and `y` must have the same size.')
 
@@ -432,8 +445,10 @@ class poly2d_transform(object):
         cy = np.atleast_1d(cy) + 0.0
 
         # -- Check the inputs.
-        if cx.ndim != 1: raise ValueError("`cx` must be 1-dim.")
-        if cy.ndim != 1: raise ValueError("`cy` must be 1-dim.")
+        if cx.ndim != 1:
+            raise ValueError("`cx` must be 1-dim.")
+        if cy.ndim != 1:
+            raise ValueError("`cy` must be 1-dim.")
         if cx.size != cy.size:
             raise ValueError("`cx` and `cy` must have the same size.")
 
@@ -466,8 +481,10 @@ class poly2d_transform(object):
         x = np.atleast_1d(x) + 0.0
         y = np.atleast_1d(y) + 0.0
         # -- Chek inputs.
-        if x.ndim != 1: raise ValueError("`x` must be 1-dim.")
-        if y.ndim != 1: raise ValueError("`y` must be 1-dim.")
+        if x.ndim != 1:
+            raise ValueError("`x` must be 1-dim.")
+        if y.ndim != 1:
+            raise ValueError("`y` must be 1-dim.")
         if x.size != y.size:
             raise ValueError('`x` and `y` must have the same size.')
 
@@ -476,8 +493,8 @@ class poly2d_transform(object):
             yt = _polyfunc[self._order](x, y, self._cy)
         except KeyError:
             V = vandermonde(x, y, self._order)
-            xt =  np.dot(V, self._cx)
-            yt =  np.dot(V, self._cy)
+            xt = np.dot(V, self._cx)
+            yt = np.dot(V, self._cy)
         return xt, yt
 
     @property
