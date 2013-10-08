@@ -9,7 +9,7 @@ from numpy.linalg import lstsq
 import _poly2d
 
 
-__all__ = ['poly2d', 'polyfit2d']
+__all__ = ['polyval2d', 'polyfit2d']
 
 
 # Use the polynomial functions in the C-extension module `_poly2d` if
@@ -208,97 +208,37 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
         return c
 
 
-class poly2d(object):
-    """A 2-dimensional polynomial class.
+def polyval2d(x, y, c):
+    """Evaluate a 2-D polynomial at points (x, y).
 
-    z = c[0] + c[1]*x + c[2]*y + ... + c[n-1]*x*y**(n-1) + c[n]*y**n
+    This function returns the value
+
+    .. math:: p(x,y) = \\sum_{i,j} c_{i,j} * x^i * y^j
 
     Parameters
     ----------
-    coeffs : array_like
-        The polynomial coefficients in *ascending* powers.
+    x, y : array_like, compatible objects
+        The two dimensional series is evaluated at the points (x, y), where x
+        and y must have the same shape. If x or y is a list or tuple, it is
+        first converted to an ndarray, otherwise it is left unchanged and, if it
+        is not an ndarray, it is treated as a scalar.
+    c : array_like
+        Array of coefficients ordered so that the coefficient of the term of
+        multi-degree i,j is contained in `c[i,j]`.
 
-    Attributes
-    ----------
-    coeffs : array_like, shape (n,)
-        The polynomial coefficients in *ascending* powers.
-    order : int
-        The order of the polynomial.
+    Returnes
+    --------
+    values : ndarray, compatible object
+        The values of the two dimensional polynomial at points formed with pairs
+        of corresponding values from x and y.
+
+    See Also
+    --------
+    numpy.polynomial.polynomial.polyval2d
     """
-    def __init__(self, coeffs):
-        """
-        Parameters
-        ----------
-        coeffs : array_like
-            The polynomial coefficients in *ascending* powers.
+    from numpy.polynomial.polynomial import polyval2d
 
-        Raises
-        ------
-        ValueError
-            If `coeffs` is not 1-dim.
-        """
-        coeffs = np.atleast_1d(coeffs) + 0.0
-        # Check the inputs.
-        if coeffs.ndim != 1:
-            raise ValueError("`coeffs` must be 1-dim.")
-
-        self._c = coeffs
-        self._order = order(len(self._c))
-
-    def __call__(self, x, y):
-        """Return the transformed coordinates.
-
-        Parameters
-        ----------
-        x : array_like, shape (M,)
-            The x-coordinate.
-        y : array_like, shape (M,)
-            The y-coordinate.
-
-        Returns
-        -------
-        z : ndarray, shape(M,)
-            The evaluated polynomial.
-
-        Raises
-        ------
-        ValueError
-            If either `x` or `y` are not 1-dim, or the their sizes are
-            not the same.
-        """
-        x = np.atleast_1d(x) + 0.0
-        y = np.atleast_1d(y) + 0.0
-        # Chek inputs.
-        if x.ndim != 1:
-            raise ValueError("`x` must be 1-dim.")
-        if y.ndim != 1:
-            raise ValueError("`y` must be 1-dim.")
-        if x.size != y.size:
-            raise ValueError('`x` and `y` must have the same size.')
-
-        try:
-            return _polyfunc[self._order](x, y, self._c)
-        except KeyError:
-            V = vandermonde(x, y, self._order)
-            return np.dot(V, self._c)
-
-    def __array__(self):
-        """Return a copy of `_c`."""
-        return np.array(self._c)
-
-    def __repr__(self):
-        vals = repr(self._c)
-        return "poly2d({0})".format(vals[6:-1])
-
-    def __len__(self):
-        return self._order
-
-    @property
-    def coeffs(self):
-        """The polynomial coefficients."""
-        return self._c
-
-    @property
-    def order(self):
-        """The order of the polynomial."""
-        return self._order
+    c = np.asarray(c)
+    if c.ndim != 2 or c.shape[0] != c.shape[1]:
+        raise ValueError('c must be a squared 2-dim array.')
+    return polyval2d(x, y, c)

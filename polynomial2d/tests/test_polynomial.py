@@ -9,7 +9,7 @@ except:
 from numpy.testing import *
 
 from polynomial2d.polynomial import (ncoeffs, order, vandermonde, )
-from polynomial2d.polynomial import (poly2d, polyfit2d,)
+from polynomial2d.polynomial import (polyval2d, polyfit2d,)
 
 
 def _realistic_coeffs(order):
@@ -71,46 +71,15 @@ class TestHelperFuncs(unittest.TestCase):
         self.assertRaises(ValueError, vandermonde, x, y.reshape(5,2), 1)
 
 
-class TestPoly2d(unittest.TestCase):
+def test_polyval2d():
+    c = [[1, 2], [3, 0]]
+    assert_equal(polyval2d(0, 0, c), 1.0)
+    assert_equal(polyval2d(1, 0, c), 4.0)
+    assert_equal(polyval2d(0, 1, c), 3.0)
+    assert_equal(polyval2d(1, 1, c), 6.0)
 
-    def test_ctor(self):
-        self.assertTrue(isinstance(poly2d([1, 2, 3]), poly2d))
-        self.assertTrue(isinstance(poly2d([1, 2, 3, 4, 5, 6]), poly2d))
-
-        # `coeffs` must be a 1-dim array.
-        coeffs = [[1, 2, 3], [4, 5, 6]]
-        self.assertRaises(ValueError, poly2d, coeffs)
-        # `coeffs` must be consistent size.
-        coeffs = [[1, 2, 3, 4], [5, 6, 7, 9]]
-        self.assertRaises(ValueError, poly2d, coeffs)
-
-    def test_attr(self):
-        p = poly2d([1, 2, 3])
-
-        self.assertTrue(hasattr(p, 'coeffs'))
-        self.assertTrue(hasattr(p, 'order'))
-
-        # __len__() returns the polynomial order.
-        self.assertEqual(1, len(p))
-        # __array__() returns a copy of `coeffs`.
-        c = np.array(p)
-        assert_equal(p, p.coeffs)
-        self.assertNotEqual(id(c), id(p.coeffs))
-
-    def test_call(self):
-        p = poly2d([1, 2, 3])
-
-        assert_equal(p(0, 0), 1)
-        assert_equal(p(1, 2), 9)
-
-        # x and y must be a 1-dim array.
-        x = np.random.random(10).reshape(2,5)
-        y = np.random.random(10).reshape(2,5)
-        self.assertRaises(ValueError, p, x, y)
-        # x and y must have the same size.
-        x = np.random.random(10)
-        y = np.random.random(11)
-        self.assertRaises(ValueError, p, x, y)
+    assert_raises(ValueError, polyval2d, 0, 0, [1, 2, 3])
+    assert_raises(ValueError, polyval2d, 0, 0, [[1, 2, 3], [1, 2, 3]])
 
 
 class TestPolyfit2d(unittest.TestCase):
@@ -198,7 +167,7 @@ class TestPolyfit2d(unittest.TestCase):
         x = 100 * np.random.random(1000)
         y = 100 * np.random.random(1000)
 
-        z = poly2d(c0)(x, y)
+        z = polyval2d(c0)(x, y)
         c = polyfit2d(x, y, z, order)
 
         assert_array_almost_equal(c, c0)
