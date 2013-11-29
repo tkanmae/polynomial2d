@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+
 import numpy as np
 from functools import partial
 try:
@@ -8,8 +10,8 @@ except:
     import unittest
 from numpy.testing import *
 
-from polynomial2d.polynomial import (ncoeffs, order, vandermonde, )
-from polynomial2d.polynomial import (polyval2d, polyfit2d,)
+from ..polynomial import (ncoeffs, order, vandermonde, )
+from ..polynomial import (polyval2d, polyfit2d,)
 
 
 def _realistic_coeffs(order):

@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import division
+from __future__ import absolute_import, division
+
 import warnings
 from math import sqrt
 import numpy as np
 from numpy.linalg import lstsq
 
-import _poly2d
+from . import _poly2d
 
 
 __all__ = ['polyval2d', 'polyfit2d']
