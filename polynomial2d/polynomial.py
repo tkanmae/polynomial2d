@@ -3,9 +3,7 @@
 from __future__ import absolute_import, division, print_function
 
 import warnings
-from math import sqrt
 import numpy as np
-from numpy.linalg import lstsq
 
 from . import _poly2d
 
@@ -26,84 +24,84 @@ _polyfunc = {
 
 
 class RankWarning(UserWarning):
-    """Issued by `polyfit2d` when the matrix `X` is rank deficient."""
     pass
 
 
-def vandermonde(x, y, order):
-    """Return the Vandermonde matrix for a given order.
+def _polyvander2d(x, y, deg):
+    """Return the pseudo-Vandermonde matrix for a given degree.
 
-    [1, x[0], y[0], ... , x[0]*y[0]**(n-1), y[0]**n]
-    [1, x[1], y[1], ... , x[1]*y[1]**(n-1), y[1]**n]
+    [1, x[0], y[0], ... , x[0]*y[0]**(deg-1), y[0]**deg]
+    [1, x[1], y[1], ... , x[1]*y[1]**(deg-1), y[1]**deg]
     ...                                          ...
     ...                                          ...
-    [1, x[M], y[M], ... , x[M]*y[M]**(n-1), y[M]**n]
+    [1, x[M], y[M], ... , x[M]*y[M]**(deg-1), y[M]**deg]
 
     Parameters
     ----------
     x : array_like, shape (M,)
-        The x-coordinate of M sample points.
+        x-coordinate of M sample points.
     y : array_like, shape (M,)
-        The y-coordinate of M sample points.
-    order : int
-        The order of the polynomial.
+        x-coordinate of M sample points.
+    deg : int
+        Degree of the polynomial.
 
     Returns
     -------
     V : ndarray
         The Vandermonde matrix.
     """
-    x = np.atleast_1d(x)
-    y = np.atleast_1d(y)
+    x = np.array(x, copy=False, ndmin=1) + 0.0
+    y = np.array(y, copy=False, ndmin=1) + 0.0
     if x.ndim != 1:
-        raise ValueError("`x` must be 1-dim.")
+        raise ValueError("x must be 1-dim.")
     if y.ndim != 1:
-        raise ValueError("`y` must be 1-dim.")
+        raise ValueError("y must be 1-dim.")
 
-    n = (order+1)*(order+2) // 2
-    V = np.zeros((x.size, n), x.dtype)
-
-    V[:, 0] = np.ones(x.size)
+    dims = ((deg+1)*(deg+2) // 2, ) + x.shape
+    v = np.empty(dims, dtype=x.dtype)
+    v[0] = x * 0 + 1.0
     i = 1
-    for o in range(1, order+1):
-        V[:, i:i+o] = x[:, np.newaxis] * V[:, i-o:i]
-        V[:, i+o] = y * V[:, i-1]
-        i += o + 1
-    return V
+    for j in range(1, deg+1):
+        v[i:i+j] = x * v[i-j:i]
+        v[i+j] = y * v[i-1]
+        i += j + 1
+    return np.rollaxis(v, 0, v.ndim)
 
 
-def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
+def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
     """Return the polynomial coefficients determined by the least-square fit.
 
-    z = cx[0] + cx[1]*x + cx[2]*y + ... + cx[n-1]*x*y**(n-1) + cx[n]*y**n
+    z = c_00 + c_10 * x + c_01 * y + ... + c_0n * y^n
 
     Parameters
     ----------
     x : array_like, shape (M,)
-        The x-coordinates of the M sample points.
+        x-coordinates of the M sample points.
     y : array_like, shape (M,)
-        The y-coordinates of the M sample points.
+        y-coordinates of the M sample points.
     z : array_like, shape (M,)
-        The z-coordinates of the M sample points.
-
-    order : int, optional
-        The order of the fitting polynomial.
+        z-coordinates of the M sample points.
+    deg : int, optional
+        Degree of the polynomial to be fit.
     rcond : float, optional
-        The relative condition of the fit.  Singular values smaller than
-        this number relative to the largest singular value will be
-        ignored.
+        Relative condition of the fit.  Singular values smaller than
+        `rcond`, relative to the largest singular value, will be
+        ignored.  The default value is ``len(x)*eps``, where `eps` is
+        the relative precision of the platform's float type, about 2e-16
+        in most cases.
     full_output : {True, False}, optional
         Just the coefficients are returned if False, and diagnostic
         information from the SVD is also returned if True.
 
     Returns
     -------
-    c : ndarray
-        The polynomial coefficients in *ascending* powers.
-    residuals, rank, singular_values, rcond : if `full_output` = True
-        Residuals of the least-squares fit, the effective rank of the scaled
-        Vandermonde coefficient matrix, its singular values, and the specified
-        value of `rcond`. For more details, see `numpy.linalg.lstsq`.
+    coef : ndarray
+        Polynomial coefficients.
+    [residuals, rank, singular_values, rcond] : if `full_output` = True
+        Sum of the squared residuals of the least-squares fit; the
+        effective rank of the scaled pseudo-Vandermonde matrix; its
+        singular values, and the specified value of `rcond`. For more
+        details, see `numpy.linalg.lstsq`.
 
     Warns
     -----
@@ -116,45 +114,61 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     numpy.linalg.lstsq
     numpy.lib.polynomial.polyfit
     """
-    x = np.asarray(x, np.float64)
-    y = np.asarray(y, np.float64)
-    z = np.asarray(z, np.float64)
+    x = np.asarray(x) + 0.0
+    y = np.asarray(y) + 0.0
+    z = np.asarray(z) + 0.0
+
+    deg = int(deg)
+    if deg < 1:
+        raise ValueError("deg must be larger than 1.")
 
     # Check inputs.
-    if x.size != y.size or x.size != z.size:
-        raise ValueError("`x`, `y`, and `z` must have the same size.")
     if x.ndim != 1:
-        raise ValueError("`x` must be 1-dim.")
+        raise ValueError("x must be 1-dim.")
     if y.ndim != 1:
-        raise ValueError("`y` must be 1-dim.")
+        raise ValueError("y must be 1-dim.")
     if z.ndim != 1:
-        raise ValueError("`z` must be 1-dim.")
-    # Set `rcond`
+        raise ValueError("z must be 1-dim.")
+    if x.size != y.size or x.size != z.size:
+        raise ValueError("x, y, and z must have the same size.")
+
+    lhs = _polyvander2d(x, y, deg).T
+    rhs = z.T
+
+    # Set rcond.
     if rcond is None:
         rcond = x.size * np.finfo(x.dtype).eps
-    # Scale `x` and `y`.
-    scale = max(abs(x.max()), abs(y.max()))
-    if scale != 0:
-        x /= scale
-        y /= scale
 
-    # Solve the least square equations.
-    v = vandermonde(x, y, order)
-    c, rsq, rank, s = lstsq(v, z)
+    # Determine the norms of the design maxtirx columns.
+    if issubclass(lhs.dtype.type, np.complexfloating):
+        scl = np.sqrt((np.square(lhs.real) + np.square(lhs.imag)).sum(1))
+    else:
+        scl = np.sqrt(np.square(lhs).sum(1))
+    scl[scl == 0] = 1
 
-    # Warn on rank deficit, which indicates an ill-conditioned matrix.
-    if rank != (order+1)*(order+2) // 2 and not full_output:
-        msg = "`polyfit2d` may be poorly conditioned"
+    # Solve the least squares problem.
+    c, resids, rank, s = np.linalg.lstsq(lhs.T / scl, rhs.T, rcond)
+    c = (c.T / scl).T
+
+    # Warn on rank reduction.
+    if rank != lhs.shape[0] and not full_output:
+        msg = "The fit may be poorly conditioned."
         warnings.warn(msg, RankWarning)
-    # Scale the returned coefficients.
-    if scale != 0:
-        S = vandermonde([scale], [scale], order)[0]
-        c /= S
+
+    inds = []
+    for m in range(deg + 1):
+        for j in range(m + 1):
+            for i in range(m + 1):
+                if i + j != m:
+                    continue
+                inds.append((i, j))
+    cnew = np.zeros((deg + 1, deg + 1))
+    cnew[zip(*inds)] = c
 
     if full_output:
-        return c, rsq, s, rank, rcond
+        return cnew, [resids, rank, s, rcond]
     else:
-        return c
+        return cnew
 
 
 def polyval2d(x, y, c):
