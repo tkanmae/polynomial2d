@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import numpy as np
-from setuptools import setup, Extension
+from setuptools import setup
 
 
 setup(
@@ -19,13 +18,6 @@ setup(
     packages=[
         'polynomial2d',
         'polynomial2d.tests',
-    ],
-    ext_modules=[
-        Extension(
-            'polynomial2d._poly2d',
-            sources=['polynomial2d/_poly2d.c'],
-            include_dirs=[np.get_include()],
-        ),
     ],
     install_requires=open('requirements.txt').read().splitlines(),
 )
