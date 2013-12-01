@@ -30,25 +30,25 @@ class RankWarning(UserWarning):
 def _polyvander2d(x, y, deg):
     """Return the pseudo-Vandermonde matrix for a given degree.
 
-    [1, x[0], y[0], ... , x[0]*y[0]**(deg-1), y[0]**deg]
-    [1, x[1], y[1], ... , x[1]*y[1]**(deg-1), y[1]**deg]
-    ...                                          ...
-    ...                                          ...
-    [1, x[M], y[M], ... , x[M]*y[M]**(deg-1), y[M]**deg]
+    [[1, x[0], y[0], ... , x[0]*y[0]^(n-1), y[0]^n]
+     [1, x[1], y[1], ... , x[1]*y[1]^(n-1), y[1]^n]
+     ...                                       ...
+     [1, x[M], y[M], ... , x[M]*y[M]^(n-1), y[M]^n]]
+
+    where `n` is `deg`.
 
     Parameters
     ----------
-    x : array_like, shape (M,)
-        x-coordinate of M sample points.
-    y : array_like, shape (M,)
-        x-coordinate of M sample points.
+    x, y : array_like, shape (M,)
+        Array of points. `x` and `y` must have the same shape.
     deg : int
-        Degree of the polynomial.
+        Degree of the resulting matrix.
 
     Returns
     -------
-    V : ndarray
-        The Vandermonde matrix.
+    v : ndarray
+        The Vandermonde matrix. The shape of the matrix is ``x.shape +
+        ((deg+1)*(deg+2) // 2, ))``.
     """
     x = np.array(x, copy=False, ndmin=1) + 0.0
     y = np.array(y, copy=False, ndmin=1) + 0.0
@@ -69,18 +69,22 @@ def _polyvander2d(x, y, deg):
 
 
 def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
-    """Return the polynomial coefficients determined by the least-square fit.
+    """Return the coefficients of a polynomial of degree `deg`.
 
-    z = c_00 + c_10 * x + c_01 * y + ... + c_0n * y^n
+    The coefficients are determined by the least square fit to the data values
+    `z` given at points ``(x, y)``.  The fitting assumes the polynomial in a
+    form::
+
+    .. math:: p(x,y) = \\sum_{i,j} c_{i,j} * x^i * y^j
+
+    with a constraint of ``i + j <= n`` where `n` is `deg`.
 
     Parameters
     ----------
-    x : array_like, shape (M,)
-        x-coordinates of the M sample points.
-    y : array_like, shape (M,)
-        y-coordinates of the M sample points.
+    x, y : array_like, shape (M,)
+        x- and y-oordinates of the M data points ``(x[i], y[i])``.
     z : array_like, shape (M,)
-        z-coordinates of the M sample points.
+        z-coordinates of the M data points.
     deg : int, optional
         Degree of the polynomial to be fit.
     rcond : float, optional
@@ -96,7 +100,7 @@ def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
     Returns
     -------
     coef : ndarray
-        Polynomial coefficients.
+        Array of coefficients.
     [residuals, rank, singular_values, rcond] : if `full_output` = True
         Sum of the squared residuals of the least-squares fit; the
         effective rank of the scaled pseudo-Vandermonde matrix; its
@@ -132,6 +136,7 @@ def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
     if x.size != y.size or x.size != z.size:
         raise ValueError("x, y, and z must have the same size.")
 
+    # Set up the matrices for the problem in transposed form.
     lhs = _polyvander2d(x, y, deg).T
     rhs = z.T
 
@@ -147,14 +152,15 @@ def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
     scl[scl == 0] = 1
 
     # Solve the least squares problem.
-    c, resids, rank, s = np.linalg.lstsq(lhs.T / scl, rhs.T, rcond)
-    c = (c.T / scl).T
+    c1, resids, rank, s = np.linalg.lstsq(lhs.T / scl, rhs.T, rcond)
+    c1 = (c1.T / scl).T
 
     # Warn on rank reduction.
     if rank != lhs.shape[0] and not full_output:
         msg = "The fit may be poorly conditioned."
         warnings.warn(msg, RankWarning)
 
+    # Allocate the coefficients in a 2-dim array.
     inds = []
     for m in range(deg + 1):
         for j in range(m + 1):
@@ -162,13 +168,13 @@ def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
                 if i + j != m:
                     continue
                 inds.append((i, j))
-    cnew = np.zeros((deg + 1, deg + 1))
-    cnew[zip(*inds)] = c
+    c2 = np.zeros((deg + 1, deg + 1))
+    c2[zip(*inds)] = c1
 
     if full_output:
-        return cnew, [resids, rank, s, rcond]
+        return c2, [resids, rank, s, rcond]
     else:
-        return cnew
+        return c2
 
 
 def polyval2d(x, y, c):
