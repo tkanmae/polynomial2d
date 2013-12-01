@@ -10,7 +10,7 @@ except:
     import unittest
 from numpy.testing import *
 
-from ..polynomial import (ncoeffs, order, vandermonde, )
+from ..polynomial import (vandermonde,)
 from ..polynomial import (polyval2d, polyfit2d,)
 
 
@@ -30,29 +30,6 @@ def _realistic_coeffs(order):
 
 
 class TestHelperFuncs(unittest.TestCase):
-
-    def test_ncoeffs(self):
-        self.assertEqual(3, ncoeffs(1))
-        self.assertEqual(6, ncoeffs(2))
-        self.assertEqual(10, ncoeffs(3))
-        self.assertEqual(15, ncoeffs(4))
-        self.assertEqual(21, ncoeffs(5))
-
-        # `order` must be a positive integer.
-        self.assertRaises(TypeError, ncoeffs, 1.0)
-        self.assertRaises(ValueError, ncoeffs, 0)
-        self.assertRaises(ValueError, ncoeffs, -1)
-
-    def test_order(self):
-        self.assertEqual(1, order(3))
-        self.assertEqual(2, order(6))
-        self.assertEqual(3, order(10))
-        self.assertEqual(4, order(15))
-        self.assertEqual(5, order(21))
-
-        # `ncoeffs` must be one of 3, 6, 10, ...
-        self.assertRaises(ValueError, order, 1)
-        self.assertRaises(ValueError, order, 4)
 
     def test_vandermonde(self):
         x = np.array([1])

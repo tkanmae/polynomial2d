@@ -30,58 +30,6 @@ class RankWarning(UserWarning):
     pass
 
 
-def ncoeffs(order):
-    """Return the number of the coefficients for a given polynomial
-    order.
-
-    Parameters
-    ----------
-    order : int
-        The polynomial order.
-
-    Returns
-    -------
-    num : int
-        The number of the coefficients.
-
-    Raises
-    ------
-    ValueError
-        If `order` is less than 1.
-    """
-    if not isinstance(order, int):
-        raise TypeError("`order` must be a int")
-    if order < 1:
-        raise ValueError("`order` must be greater than 0: {0}".format(order))
-    return (order+1)*(order+2) // 2
-
-
-def order(ncoeffs):
-    """Return the polynomial order for a given number of the
-    coefficients.
-
-    Parameters
-    ----------
-    ncoeffs : int
-        The number of the coeefficients.
-
-    Returns
-    -------
-    order : int
-        The polynomial order.
-
-    Raises
-    ------
-    ValueError
-        If `ncoeffs` is not consistent with any of 2-dim polynomial orders.
-    """
-    order = (sqrt(8*ncoeffs+1) - 3) / 2
-    if order % 1 > 1e-8 or order < 1:
-        raise ValueError("`ncoeff` is not consistent with any of 2-dim"
-                         "polynomial orders: {0}".format(ncoeffs))
-    return int(order)
-
-
 def vandermonde(x, y, order):
     """Return the Vandermonde matrix for a given order.
 
@@ -195,7 +143,7 @@ def polyfit2d(x, y, z, order=1, rcond=None, full_output=False):
     c, rsq, rank, s = lstsq(v, z)
 
     # Warn on rank deficit, which indicates an ill-conditioned matrix.
-    if rank != ncoeffs(order) and not full_output:
+    if rank != (order+1)*(order+2) // 2 and not full_output:
         msg = "`polyfit2d` may be poorly conditioned"
         warnings.warn(msg, RankWarning)
     # Scale the returned coefficients.
