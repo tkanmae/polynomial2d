@@ -5,22 +5,8 @@ from __future__ import absolute_import, division, print_function
 import warnings
 import numpy as np
 
-from . import _poly2d
-
 
 __all__ = ['polyval2d', 'polyfit2d']
-
-
-# Use the polynomial functions in the C-extension module `_poly2d` if
-# a polynomial order is not greater than 5.  These functions are mush
-# faster than calculation using a Vandermonde matrix.
-_polyfunc = {
-    1: _poly2d.poly1,
-    2: _poly2d.poly2,
-    3: _poly2d.poly3,
-    4: _poly2d.poly4,
-    5: _poly2d.poly5,
-}
 
 
 class RankWarning(UserWarning):
