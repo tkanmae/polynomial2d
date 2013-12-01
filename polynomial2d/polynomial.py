@@ -57,8 +57,8 @@ def _polyvander2d(x, y, deg):
 def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
     """Return the coefficients of a polynomial of degree `deg`.
 
-    The coefficients are determined by the least square fit to the data values
-    `z` given at points ``(x, y)``.  The fitting assumes the polynomial in a
+    The coefficients are determined by the least square fit to given data values
+    `z` at given points ``(x, y)``.  The fitting assumes the polynomial in a
     form::
 
     .. math:: p(x,y) = \\sum_{i,j} c_{i,j} * x^i * y^j
