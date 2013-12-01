@@ -11,20 +11,23 @@ from ..polynomial import (polyval2d, polyfit2d,)
 
 
 def test_polyvander2d():
-    x = np.array([1])
-    y = np.array([2])
+    x, y = np.array([1]), np.array([2])
 
-    e = np.array([[1, 1, 2]])
-    assert_equal(e, _polyvander2d(x, y, 1))
-    e = np.array([[1, 1, 2, 1, 2, 4]])
-    assert_equal(e, _polyvander2d(x, y, 2))
-    e = np.array([[1, 1, 2, 1, 2, 4, 1, 2, 4, 8]])
-    assert_equal(e, _polyvander2d(x, y, 3))
-    e = np.array([[1, 1, 2, 1, 2, 4, 1, 2, 4, 8, 1, 2, 4, 8, 16]])
-    assert_equal(e, _polyvander2d(x, y, 4))
+    desired = np.array([[1, 1, 2]])
+    assert_equal(_polyvander2d(x, y, 1), desired)
+    desired = np.array([[1, 1, 2, 1, 2, 4]])
+    assert_equal(_polyvander2d(x, y, 2), desired)
+    desired = np.array([[1, 1, 2, 1, 2, 4, 1, 2, 4, 8]])
+    assert_equal(_polyvander2d(x, y, 3), desired)
+    desired = np.array([[1, 1, 2, 1, 2, 4, 1, 2, 4, 8, 1, 2, 4, 8, 16]])
+    assert_equal(_polyvander2d(x, y, 4), desired)
 
 
 def test_polyval2d():
+    # Coeffcients must be in a 2-dim array.
+    assert_raises(ValueError, polyval2d, 0, 0, [1, 2, 3])
+    assert_raises(ValueError, polyval2d, 0, 0, [[1, 2], [3, 4], [4, 5]])
+
     c = [[1, 2], [3, 0]]
     assert_equal(polyval2d(0, 0, c), 1.0)
     assert_equal(polyval2d(1, 0, c), 4.0)
