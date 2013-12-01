@@ -5,7 +5,7 @@ from setuptools import setup, Extension
 
 
 setup(
-    name='Polynomial2d',
+    name='polynomial2d',
     version='0.2.0',
     license='MIT',
     author='Takeshi Kanmae',
