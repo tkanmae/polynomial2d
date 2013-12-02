@@ -102,7 +102,7 @@ def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
     See Also
     --------
     numpy.linalg.lstsq
-    numpy.lib.polynomial.polyfit
+    numpy.polynomial.polynomial.polyfit
     """
     x = np.asarray(x) + 0.0
     y = np.asarray(y) + 0.0
