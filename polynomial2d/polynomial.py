@@ -101,8 +101,7 @@ def polyfit2d(x, y, z, deg=1, rcond=None, full_output=False):
 
     See Also
     --------
-    numpy.linalg.lstsq
-    numpy.polynomial.polynomial.polyfit
+    polyval2d, polygrid2d
     """
     x = np.asarray(x) + 0.0
     y = np.asarray(y) + 0.0
@@ -242,11 +241,12 @@ def polyval2d(x, y, c):
 
     See Also
     --------
+    polygrid2d, polyfit2d
     numpy.polynomial.polynomial.polyval2d
     """
     from numpy.polynomial.polynomial import polyval2d
 
     c = np.asarray(c)
     if c.ndim != 2 or c.shape[0] != c.shape[1]:
-        raise ValueError('c must be a squared 2-dim array.')
+        raise ValueError("c must be a squared 2-dim array.")
     return polyval2d(x, y, c)
